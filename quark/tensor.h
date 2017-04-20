@@ -49,9 +49,7 @@ public:
   // TODO(Trevor): handle de-allocation of memory
   ~Tensor() = default;
 
-  /**
-   * Getter for data pointer
-   */
+  
   
 protected:
   shared_ptr<T> data_;

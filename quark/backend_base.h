@@ -4,29 +4,29 @@
 namespace quark {
 
 /**
- * @brief abstract base class for backend objects
+ * @brief Abstract base class for backend objects
  *
  * Defines the interface that all backend objects must implement, such 
  * as allocation, and de-allocation methods
  */
 class BackendBase {
 public:
-
+  
   /**
    * Allocation method for the backend
    */
-  virtual static void* New(int nbytes) = 0;
+  virtual static void New(void* ptr, size_t nbytes) = 0;
 
   /**
    * De-allocation method for the backend
    */
-  virtual static void* Delete(void *data) = 0;
+  virtual static void Delete(void* ptr) = 0;
 
   BackendBase(const BackendBase &other) = delete;
   BackendBase(BackendBase &&other) = delete;
   BackendBase& operator=(const BackendBase &rhs) = delete;
   BackendBase& operator=(BackendBase &&rhs) = delete;
-  ~BackendBase() = default;
+  ~BackendBase() = delete;
   
 protected:
   // Backend objects should not be instantiated
