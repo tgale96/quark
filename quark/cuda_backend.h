@@ -6,14 +6,13 @@
 namespace quark {
 
 /**
- * @brief backend object for cuda
+ * @brief Backend object for cuda
  *
  * Provides functions for allocation and deallocation 
  * of cuda memory
  */
 class CudaBackend final {
-public:
-  
+public:  
   /**
    * Allocates `nbytes` of cuda memory
    */

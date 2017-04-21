@@ -1,8 +1,6 @@
 #ifndef QUARK_TENSOR_H_
 #define QUARK_TENSOR_H_
 
-#include <memory>
-
 #include "quark/common.h"
 
 namespace quark {
@@ -39,6 +37,11 @@ public:
    * Creates empty Tensor
    */
   Tensor() {}
+
+  /**
+   * Creates a tensor with the input shape
+   */
+  Tensor(vector<int64> shape);
   
   // Disable copy, assign, move-copy, move-assign
   Tensor(const Tensor &other) = delete;
@@ -46,16 +49,57 @@ public:
   Tensor& operator=(const Tensor &other) = delete;
   Tensor& operator=(Tensor &&other) = delete;
 
-  // TODO(Trevor): handle de-allocation of memory
-  ~Tensor() = default;
+  ~Tensor();
 
-  // comment
-  void test();
+  /**
+   * Alters the shape of the tensor without changing the underlying memory. 
+   * Requires that the size of the tensor stays the same.
+   *
+   * @throws runtime_error if the new tensor shape does not have the same 
+   * number of elements as the current tensor
+   */
+  void Reshape(vector<int64> new_shape);
+
+  /**
+   * Resizes a tensor. The underlying memory is only reallocated if the new
+   * tensor size is larger than the current capacity of the tensor
+   */
+  void Resize(vector<int64> new_shape);
+
+  /**
+   * Returns a pointer to the underlying data store in a tensor
+   *
+   * @throws runtime_error if tensor stores no data
+   */
+  T* mutable_data() {
+    QUARK_CHECK(shape_.size() != 0, "Tensor stores no data (shape == {})");
+    return data_;
+  }
+
+  /**
+   * Returns a const pointer to the underlying data store in a tensor
+   *
+   * @throws runtime_error if tensor stores no data
+   */
+  const T* data() {
+    QUARK_CHECK(shape_.size() != 0, "Tensor stores no data (shape == {})");
+    return data_;
+  }
+
+  /**
+   * Returns the shape of a tensor
+   */
+  vector<int64> shape() { return shape_; }
+  
+  /**
+   * Returns the size of a tensor
+   */
+  int64 size() { return size_; }
   
 protected:
-  shared_ptr<T> data_;
+  T* data_ = nullptr;
   vector<int64> shape_;
-  int64 size_;
+  int64 size_ = 0;
   size_t capacity_ = 0;
 };
 

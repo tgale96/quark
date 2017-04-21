@@ -8,14 +8,13 @@
 namespace quark {
 
 // Macro for cuda error checking. All calls that return cudaError_t should be wrapped with this
-#define CUDA_CALL(code) { GpuAssert(code, __FILE__, __LINE__); }
-
-// TODO(Trevor): update output to use logging functions
-inline void GpuAssert(cudaError_t code, const string file, int line) {
-  if (code != cudaSuccess) {
-    std::cout << file << "(" << to_string(line) << "): "
-              << cudaGetErrorString(code) << std::endl;
-  }
+#define CUDA_CALL(code) {                                               \
+  if (code != cudaSuccess) {                                            \
+    string file = __FILE__;                                             \
+    string line = to_string(__LINE__);                                  \
+    string err_str = cudaGetErrorString(code);                          \
+    std::cout << file << "(" << line << "): " << err_str << std::endl;  \
+  }                                                                     \
 }
 
 } // namespace quark
