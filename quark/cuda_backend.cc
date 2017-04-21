@@ -3,8 +3,10 @@
 
 namespace quark {
 
-void CudaBackend::New(void* ptr, size_t nbytes) {
+void* CudaBackend::New(size_t nbytes) {
+  void* ptr = nullptr;
   CUDA_CALL(cudaMalloc(&ptr, nbytes));
+  return ptr;
 }
 
 void CudaBackend::Delete(void* ptr) {

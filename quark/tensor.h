@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "quark/util/common.h"
+#include "quark/common.h"
 
 namespace quark {
 // TODO(Trevor):
@@ -26,7 +26,7 @@ namespace quark {
  * distributed computation.
  *
  * This Tensor class is heavily influenced by Caffe2. In particular the idea of 
- * templating on an object that absracts the device specific memory management
+ * templating on a class that absracts the device specific memory management
  * functions. In Caffe2 these are refered to as a "Context". Here we have used 
  * the name "Backend" to avoid confusion with the term Context in the CUDA
  * programming language. Template parameter T specifies the type of data stored 
@@ -39,7 +39,7 @@ public:
    * Creates empty Tensor
    */
   Tensor() {}
-
+  
   // Disable copy, assign, move-copy, move-assign
   Tensor(const Tensor &other) = delete;
   Tensor(Tensor &&other) = delete;
@@ -49,7 +49,8 @@ public:
   // TODO(Trevor): handle de-allocation of memory
   ~Tensor() = default;
 
-  
+  // comment
+  void test();
   
 protected:
   shared_ptr<T> data_;

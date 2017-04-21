@@ -1,7 +1,7 @@
 #ifndef QUARK_CUDA_BACKEND_H_
 #define QUARK_CUDA_BACKEND_H_
 
-#include "quark/backend_base.h"
+#include "quark/common.h"
 
 namespace quark {
 
@@ -11,19 +11,25 @@ namespace quark {
  * Provides functions for allocation and deallocation 
  * of cuda memory
  */
-class CudaBackend final : public BackendBase {
+class CudaBackend final {
 public:
   
   /**
    * Allocates `nbytes` of cuda memory
    */
-  static void New(void* ptr, int nbytes) override;
+  static void* New(size_t nbytes);
 
   /**
-   * De-allocates `data` pointer
+   * De-allocates pointer
    */
-  static void Delete(void* ptr) override;
+  static void Delete(void* ptr);
 
+  CudaBackend(const CudaBackend &other) = delete;
+  CudaBackend(CudaBackend &&other) = delete;
+  CudaBackend& operator=(const CudaBackend &rhs) = delete;
+  CudaBackend& operator=(CudaBackend &&rhs) = delete;
+  ~CudaBackend() = delete;
+  
 private:
   // CudaBackend shoud not be instantiated
   CudaBackend() {}

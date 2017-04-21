@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -6,12 +8,14 @@
 namespace quark {
 
 // commonly used types
-typedef int64 int64_t;
-typedef int32 int32_t;
+typedef int64_t int64;
+typedef int32_t int32;
 
 // commonly used std lib objects
-using std::vector;
 using std::shared_ptr;
+using std::size_t;
 using std::string;
+using std::to_string;
+using std::vector;
 
 } // namespace quark

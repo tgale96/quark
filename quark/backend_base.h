@@ -1,6 +1,8 @@
 #ifndef QUARK_BACKEND_BASE_H_
 #define QUARK_BACKEND_BASE_H_
 
+#include "quark/common.h"
+
 namespace quark {
 
 /**
