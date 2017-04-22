@@ -2,21 +2,10 @@
 #define QUARK_TENSOR_H_
 
 #include "quark/common.h"
+#include "quark/cpu_backend.h"
+#include "quark/cuda_backend.h"
 
 namespace quark {
-// TODO(Trevor):
-// 1. Backends for CPU and CUDA. Handle allocation, de-allocation
-// 2. Utility methods for Tensor
-//    - resize
-//    - reshape
-//    - printing for different backends
-//    - copying between different backends
-// 3. Pinned memory for CPU
-// 4. I/O methods for tensors
-// Question
-// 1. How do we want to manage datatypes? We want ops to be able to be performed
-//    in different precision
-
 
 /**    
  * @brief Tensor is the basic unit of data storage in quark. All data storage
@@ -42,14 +31,20 @@ public:
    * Creates a tensor with the input shape
    */
   Tensor(vector<int64> shape);
+
+  /**
+   * Creates a tensor by copying a different tensor with an arbitrary backend
+   */
+  template <typename SrcBackend>
+  Tensor(const Tensor<T, SrcBackend>& src);
   
   // Disable copy, assign, move-copy, move-assign
-  Tensor(const Tensor &other) = delete;
-  Tensor(Tensor &&other) = delete;
-  Tensor& operator=(const Tensor &other) = delete;
-  Tensor& operator=(Tensor &&other) = delete;
+  Tensor(const Tensor<T, Backend> &other) = delete;
+  Tensor(Tensor<T, Backend> &&other) = delete;
+  Tensor& operator=(const Tensor<T, Backend> &other) = delete;
+  Tensor& operator=(Tensor<T, Backend> &&other) = delete;
 
-  ~Tensor();
+  ~Tensor() { Backend::Delete(data_); }
 
   /**
    * Alters the shape of the tensor without changing the underlying memory. 
@@ -66,6 +61,15 @@ public:
    */
   void Resize(vector<int64> new_shape);
 
+  /**
+   * Copies data from the input tensor into this tensor
+   *
+   * @throws runtime_error if the shape of calling tensor and input tensor
+   * don't match
+   */
+  template <typename SrcBackend>
+  void Copy(const Tensor<T, SrcBackend>& src);
+  
   /**
    * Returns a pointer to the underlying data store in a tensor
    *
@@ -102,6 +106,20 @@ protected:
   int64 size_ = 0;
   size_t capacity_ = 0;
 };
+
+/**
+ * Overloaded output operator for Tensor class w/ CpuBackend.
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
+
+/**
+ * Overloaded output operator for Tensor class w/ CudaBackend. This is a potentially
+ * expensive operation, as the data is copied from GPU to a temporary CpuBackend
+ * Tensor.
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t);
 
 } // namespace quark
 

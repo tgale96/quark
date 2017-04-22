@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "quark/cpu_backend.h"
 
 namespace quark {

@@ -12,7 +12,14 @@ namespace quark {
  * of cuda memory
  */
 class CudaBackend final {
-public:  
+public:
+
+  CudaBackend(const CudaBackend &other) = delete;
+  CudaBackend(CudaBackend &&other) = delete;
+  CudaBackend& operator=(const CudaBackend &rhs) = delete;
+  CudaBackend& operator=(CudaBackend &&rhs) = delete;
+  ~CudaBackend() = delete;
+  
   /**
    * Allocates `nbytes` of cuda memory
    */
@@ -23,12 +30,6 @@ public:
    */
   static void Delete(void* ptr);
 
-  CudaBackend(const CudaBackend &other) = delete;
-  CudaBackend(CudaBackend &&other) = delete;
-  CudaBackend& operator=(const CudaBackend &rhs) = delete;
-  CudaBackend& operator=(CudaBackend &&rhs) = delete;
-  ~CudaBackend() = delete;
-  
 private:
   // CudaBackend shoud not be instantiated
   CudaBackend() {}

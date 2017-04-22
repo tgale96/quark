@@ -13,6 +13,12 @@ namespace quark {
  */
 class CpuBackend final {
 public:
+  CpuBackend(const CpuBackend &other) = delete;
+  CpuBackend(CpuBackend &&other) = delete;
+  CpuBackend& operator=(const CpuBackend &rhs) = delete;
+  CpuBackend& operator=(CpuBackend &&rhs) = delete;
+  ~CpuBackend() = delete;
+  
   /**
    * Allocates `nbytes` of memory
    */
@@ -23,17 +29,11 @@ public:
    */
   static void Delete(void* ptr);
 
-  CpuBackend(const CpuBackend &other) = delete;
-  CpuBackend(CpuBackend &&other) = delete;
-  CpuBackend& operator=(const CpuBackend &rhs) = delete;
-  CpuBackend& operator=(CpuBackend &&rhs) = delete;
-  ~CpuBackend() = delete;
-  
 private:
   // CpuBackend shoud not be instantiated
   CpuBackend() {}
 };
-  
+
 } // namespace quark
 
 #endif // QUARK_CPU_BACKEND_H_

@@ -1,3 +1,4 @@
+#include "quark/cpu_backend.h"
 #include "quark/cuda_backend.h"
 #include "quark/cuda_util.h"
 
