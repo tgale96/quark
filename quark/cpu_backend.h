@@ -13,10 +13,8 @@ namespace quark {
  */
 class CpuBackend final {
 public:
-  CpuBackend(const CpuBackend &other) = delete;
-  CpuBackend(CpuBackend &&other) = delete;
-  CpuBackend& operator=(const CpuBackend &rhs) = delete;
-  CpuBackend& operator=(CpuBackend &&rhs) = delete;
+  DISABLE_COPY_ASSIGN_MOVE(CpuBackend);
+
   ~CpuBackend() = delete;
   
   /**

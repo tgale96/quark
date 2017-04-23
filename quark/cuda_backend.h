@@ -13,11 +13,8 @@ namespace quark {
  */
 class CudaBackend final {
 public:
-
-  CudaBackend(const CudaBackend &other) = delete;
-  CudaBackend(CudaBackend &&other) = delete;
-  CudaBackend& operator=(const CudaBackend &rhs) = delete;
-  CudaBackend& operator=(CudaBackend &&rhs) = delete;
+  DISABLE_COPY_ASSIGN_MOVE(CudaBackend);
+  
   ~CudaBackend() = delete;
   
   /**

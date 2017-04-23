@@ -1,5 +1,9 @@
 # ignore emacs tmp files
 *~
+*.#
+*#
+
+# ignore compilation output
 *.o
 *.d
 main

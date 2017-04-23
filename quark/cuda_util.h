@@ -1,6 +1,7 @@
 #ifndef QUARK_CUDA_UTIL_H_
 #define QUARK_CUDA_UTIL_H_
 
+#include <cuda.h>
 #include <cuda_runtime.h>
 
 #include "quark/common.h"

@@ -30,19 +30,15 @@ public:
   /**
    * Creates a tensor with the input shape
    */
-  Tensor(vector<int64> shape);
+  explicit Tensor(vector<int64> shape);
 
   /**
    * Creates a tensor by copying a different tensor with an arbitrary backend
    */
   template <typename SrcBackend>
-  Tensor(const Tensor<T, SrcBackend>& src);
-  
-  // Disable copy, assign, move-copy, move-assign
-  Tensor(const Tensor<T, Backend> &other) = delete;
-  Tensor(Tensor<T, Backend> &&other) = delete;
-  Tensor& operator=(const Tensor<T, Backend> &other) = delete;
-  Tensor& operator=(Tensor<T, Backend> &&other) = delete;
+  explicit Tensor(const Tensor<T, SrcBackend>& src);
+
+  DISABLE_COPY_ASSIGN_MOVE(Tensor);
 
   ~Tensor() { Backend::Delete(data_); }
 
