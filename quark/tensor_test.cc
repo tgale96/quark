@@ -58,7 +58,6 @@ public:
     bool res = true;
     for (int i = 0; i < num; ++i) {
       if (h_d1[i] != h_d2[i]) {
-        std::cout << h_d1[i] << " v. " << h_d2[i] << std::endl;
         res = false;
       }
     }
@@ -212,6 +211,20 @@ TYPED_TEST(TensorTest, CopyFromCudaTensor) {
   
   // make sure the data is the same
   ASSERT_TRUE(this->CompareData(src_tensor.data(), new_tensor.data(), src_tensor.size()));
+}
+
+TYPED_TEST(TensorTest, TestTensorIds) {
+  DEFINE_TYPES();
+  
+  for (int i = 0; i < 100; ++i) {
+    Tensor<T, Backend> tensor;
+    Tensor<T, CudaBackend> d_tensor;
+    Tensor<T, CpuBackend> h_tensor;
+
+    // make sure ids are unique and incremental
+    ASSERT_EQ(tensor.id(), d_tensor.id() - 1);
+    ASSERT_EQ(tensor.id(), h_tensor.id() - 2);
+  }
 }
 
 } // namespace quark

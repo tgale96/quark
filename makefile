@@ -52,7 +52,7 @@ $(EXE): $(CXX_OBJ)
 	$(Q)$(CC) $(CXX_FLAGS) -o $@ $^ $(LDFLAGS) $(LIB)
 
 clean: 
-	$(Q)rm -f $(CXX_OBJ) $(DEPS) $(EXE) $(TEST_CXX_OBJ) $(TEST_DEPS)
+	$(Q)rm -f $(CXX_OBJ) $(DEPS) $(EXE) $(TEST_CXX_OBJ) $(TEST_DEPS) $(TEST_EXE)
 
 -include $(DEPS)
 -include $(TEST_DEPS)

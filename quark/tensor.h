@@ -1,8 +1,6 @@
 #ifndef QUARK_TENSOR_H_
 #define QUARK_TENSOR_H_
 
-#include <functional>
-
 #include "quark/backend_util.h"
 #include "quark/common.h"
 #include "quark/cpu_backend.h"
@@ -12,6 +10,20 @@ namespace quark {
 
 template <typename Type>
 class TensorTest;
+
+// Used to maintain a globaly consistent id system for all Tensor objects 
+class TensorId {
+public:
+  TensorId() : id_(++count_) {}
+  DISABLE_COPY_ASSIGN_MOVE(TensorId);
+  ~TensorId() = default;
+
+  int64 id() const { return id_; }
+
+private:
+  static int64 count_;
+  const int64 id_;
+};
 
 /**    
  * @brief Tensor is the basic unit of data storage in quark. All data storage
@@ -69,7 +81,7 @@ public:
   // TODO(Trevor): is there a way to have these copy constructors consolidated into
   // a single function? The first one should be able to handle both, but the
   // compiler seems to look for this function when the backend match.
-  Tensor(const Tensor<T, Backend>& other) {
+  explicit Tensor(const Tensor<T, Backend>& other) {
     Resize(other.shape());
     Copy(other);
   }
@@ -159,18 +171,11 @@ public:
    */
   int64 size() const { return size_; }
 
-  // TODO(Trevor): This should evaluate the data at the pointer not the pointer.
-  // TensorHash has same problem. Rather than having this and the hash function,
-  // we should just ID every tensor with an int64. This is hashable, and then
-  // we don't need to deal with these hacky comparison and hash functions.
-  bool operator==(const Tensor<T, Backend>& other) const {
-    if (data_ == other.data_ && shape_ == other.shape_ &&
-        size_ == other.size_ && capacity_ == other.capacity_) {
-      return true;
-    }
-    return false;
-  }
-
+  /**
+   * Returns the id of the tensor
+   */
+  int64 id() const { return tid_.id(); }
+  
   friend struct TensorHash;
 
   template <typename Type>
@@ -181,6 +186,8 @@ protected:
   vector<int64> shape_;
   int64 size_ = 0;
   size_t capacity_ = 0;
+  
+  const TensorId tid_;
 };
 
 /**
@@ -196,12 +203,6 @@ std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
  */
 template <typename T>
 std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t);
-
-// Hash function for Tensor class. Needed for unordered_map w/ Tensor as key. 
-struct TensorHash {
-  template <typename T, typename Backend>
-  size_t operator()(const Tensor<T, Backend>& t);
-};
 
 } // namespace quark
 
