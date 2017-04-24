@@ -9,10 +9,11 @@
 namespace quark {
 
 // Stores an operation and all of its parent/children operations
+template <typename T>
 struct Node {
-  OpBase* op = nullptr;
-  vector<OpBase*> parents;
-  vector<OpBase*> children;
+  OpBase<T>* op = nullptr;
+  vector<Node<T>*> parents;
+  vector<Node<T>*> children;
 };
 
 // TODO(Trevor): This object is templated on the type of data it works on, which
@@ -48,12 +49,20 @@ public:
    */
   void Execute();
 
-  // Adds operation to the graph
-  void AddOp(OpBase *op, vector<Tensor<T, CudaBackend>> inputs, vector<Tensor<T, CudaBackend>> outputs);
+  /**
+   * @brief Prepares the graph for execution.
+   *
+   * Adds dependencies to the graph, checks for cycles, checks for in-place ops, and
+   * constructs execution order for async graph execution.
+   */
+  void Compile();
+  
+  // Adds operation to the graph. If graph is compiled, calling this de-compiles the graph and
+  // Compile() must be called again before execution.
+  void AddOp(OpBase<T> *op);
   
 private:
-  vector<Node> graph_;
-  unordered_map<Tensor<T, CudaBackend>, Node> tensor_parents_;
+  vector<Node<T>> graph_;
 };
 
 } // namespace quark

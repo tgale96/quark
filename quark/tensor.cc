@@ -52,6 +52,14 @@ void Tensor<T, Backend>::Copy(const Tensor<T, SrcBackend>& src) {
   CopyData(src.size(), src.data(), data_);
 }
 
+template <typename T, typename Backend>
+bool Tensor<T, Backend>::operator==(const Tensor<T, Backend>& other) const {
+  if (data_ == other.data_ && shape_ == other.shape_ && size_ == other.size_ && capacity_ == other.capacity_) {
+    return true;
+  }
+  return false;
+}
+
 // TODO(Trevor): make these print in a more organized manner that shows the shape of the tensor
 template <typename T>
 std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t) {

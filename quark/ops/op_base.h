@@ -2,8 +2,12 @@
 #define QUARK_OPS_OP_BASE_H_
 
 #include "quark/cuda_util.h"
+#include "quark/tensor.h"
 
 namespace quark {
+
+template <typename T>
+using GpuTensor = Tensor<T, CudaBackend>;
 
 /**
  * @brief Defines the interface for all operations.
@@ -14,6 +18,7 @@ namespace quark {
  * I haven't figured out a good way to do this while still doing async
  * execution. To keep it simple, ops in quark only run on GPU.
  */
+template <typename T>
 class OpBase {
 public:
   /**
@@ -39,6 +44,16 @@ public:
     LaunchKernel(stream);
   }
 
+  /**
+   * Returns vector of the input Tensors to the op
+   */
+  virtual vector<const GpuTensor<T>&> inputs() const = 0;
+
+  /**
+   * Returns vector of the output Tensors of the op
+   */
+  virtual vector<const GpuTensor<T>&> outputs() const = 0;
+  
 protected:
   // Enqueues this ops kernel in the input stream
   virtual void LaunchKernel(cudaStream_t stream) = 0;

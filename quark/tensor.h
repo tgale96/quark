@@ -1,6 +1,8 @@
 #ifndef QUARK_TENSOR_H_
 #define QUARK_TENSOR_H_
 
+#include <functional>
+
 #include "quark/common.h"
 #include "quark/cpu_backend.h"
 #include "quark/cuda_backend.h"
@@ -95,6 +97,10 @@ public:
    * Returns the size of a tensor
    */
   int64 size() { return size_; }
+
+  bool operator==(const Tensor<T, Backend>& other) const;
+
+  friend struct TensorHash;
   
 protected:
   T* data_ = nullptr;
@@ -116,6 +122,24 @@ std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
  */
 template <typename T>
 std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t);
+
+// Hash function for Tensor class. Needed for unordered_map w/ Tensor as key. This will
+// need to be benchmarked to see how it actually performs. Based off the simple hash function
+// suggested at http://stackoverflow.com/a/1646913/126995. Ideally we would use something
+// like boost's hash_combine, but I wanted to avoid adding dependencies.
+struct TensorHash {
+  template <typename T, typename Backend>
+  size_t operator()(const Tensor<T, Backend>& t) {
+    size_t res = 17;
+    res = res * 31 + std::hash<T*>()(t.data_);
+    for (const auto& val : t.shape_) {
+      res = res * 31 + std::hash<int64>()(val);
+    }
+    res = res * 31 + std::hash<int64>()(t.size_);
+    res = res * 31 + std::hash<size_t>()(t.capacity_);
+    return res;
+  }
+};
 
 } // namespace quark
 
