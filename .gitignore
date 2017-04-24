@@ -7,3 +7,5 @@
 *.o
 *.d
 main
+
+quark/test/run_tests
