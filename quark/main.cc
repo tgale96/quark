@@ -5,5 +5,6 @@
 #include "quark/tensor.h"
 
 int main() {
+  quark::Tensor<float, quark::CpuBackend> test;
   std::cout << "This is a test" << std::endl;
 }

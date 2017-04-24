@@ -3,6 +3,7 @@
 
 #include <functional>
 
+#include "quark/backend_util.h"
 #include "quark/common.h"
 #include "quark/cpu_backend.h"
 #include "quark/cuda_backend.h"
@@ -32,13 +33,21 @@ public:
   /**
    * Creates a tensor with the input shape
    */
-  explicit Tensor(vector<int64> shape);
+  explicit Tensor(vector<int64> shape) {
+    size_ = Prod(shape);
+    capacity_ = size_ * sizeof(T);
+    shape_ = shape;
+    data_ = Backend::New(capacity_);
+  }
 
   /**
    * Creates a tensor by copying a different tensor with an arbitrary backend
    */
   template <typename SrcBackend>
-  explicit Tensor(const Tensor<T, SrcBackend>& src);
+  explicit Tensor(const Tensor<T, SrcBackend>& src) {
+    Resize(src.shape());
+    Copy(src);
+  }
 
   DISABLE_COPY_ASSIGN_MOVE(Tensor);
 
@@ -51,13 +60,33 @@ public:
    * @throws runtime_error if the new tensor shape does not have the same 
    * number of elements as the current tensor
    */
-  void Reshape(vector<int64> new_shape);
+  void Reshape(vector<int64> new_shape) {
+    QUARK_CHECK(Prod(new_shape) == size_, "Input tensor shape has different number of elements than current tensor");
+    shape_ = new_shape;
+  }
 
   /**
    * Resizes a tensor. The underlying memory is only reallocated if the new
    * tensor size is larger than the current capacity of the tensor
    */
-  void Resize(vector<int64> new_shape);
+  void Resize(vector<int64> new_shape) {
+    int64 new_size = Prod(new_shape);
+    
+    if (new_size == size_) {
+      shape_ = new_shape;
+    } else if (new_size > size_) {
+      // clean up current memory & allocate new memory
+      Backend::Delete(data_);
+      data_ = Backend::New(new_size * sizeof(T));
+      
+      shape_ = new_shape;
+      size_ = new_size;
+      capacity_ = new_size * sizeof(T);
+    } else {
+      shape_ = new_shape;
+      size_ = new_size;
+    }
+  }
 
   /**
    * Copies data from the input tensor into this tensor
@@ -66,7 +95,10 @@ public:
    * don't match
    */
   template <typename SrcBackend>
-  void Copy(const Tensor<T, SrcBackend>& src);
+  void Copy(const Tensor<T, SrcBackend>& src) {
+    QUARK_CHECK(src.shape() == shape(), "Input tensor shape must match current tensor shape to perform copy");
+    CopyData(src.size(), src.data(), data_);
+  }
   
   /**
    * Returns a pointer to the underlying data store in a tensor
@@ -98,7 +130,12 @@ public:
    */
   int64 size() { return size_; }
 
-  bool operator==(const Tensor<T, Backend>& other) const;
+  bool operator==(const Tensor<T, Backend>& other) const {
+    if (data_ == other.data_ && shape_ == other.shape_ && size_ == other.size_ && capacity_ == other.capacity_) {
+      return true;
+    }
+    return false;
+  }
 
   friend struct TensorHash;
   
@@ -123,22 +160,10 @@ std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
 template <typename T>
 std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t);
 
-// Hash function for Tensor class. Needed for unordered_map w/ Tensor as key. This will
-// need to be benchmarked to see how it actually performs. Based off the simple hash function
-// suggested at http://stackoverflow.com/a/1646913/126995. Ideally we would use something
-// like boost's hash_combine, but I wanted to avoid adding dependencies.
+// Hash function for Tensor class. Needed for unordered_map w/ Tensor as key. 
 struct TensorHash {
   template <typename T, typename Backend>
-  size_t operator()(const Tensor<T, Backend>& t) {
-    size_t res = 17;
-    res = res * 31 + std::hash<T*>()(t.data_);
-    for (const auto& val : t.shape_) {
-      res = res * 31 + std::hash<int64>()(val);
-    }
-    res = res * 31 + std::hash<int64>()(t.size_);
-    res = res * 31 + std::hash<size_t>()(t.capacity_);
-    return res;
-  }
+  size_t operator()(const Tensor<T, Backend>& t);
 };
 
 } // namespace quark
