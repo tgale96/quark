@@ -28,7 +28,7 @@ using std::vector;
 
 // Used for internal error checking
 #define QUARK_ASSERT(result, message)             \
-  if (!result) {                                  \
+  if (!(result)) {                                \
     string file = __FILE__;                       \
     string line = to_string(__LINE__);            \
     string err_str = file + "(" + line + "): ";   \
@@ -38,7 +38,7 @@ using std::vector;
 
 // used for checking user input
 #define QUARK_CHECK(result, message)                \
-  if (!result) {                                    \
+  if (!(result)) {                                  \
     string file = __FILE__;                         \
     string line = to_string(__LINE__);              \
     string err_str = file + "(" + line + "): ";     \
