@@ -232,6 +232,14 @@ private:
       QUARK_CHECK(node.second.children.size() != 0, "Cannot compile, graph contains cycles");
     }
   }
+
+  cudaStream_t AssignStream(unordered_map<OpId, cudaStream_t> op_stream_map) {
+    /* For each parent to the current node (make sure we use a complete version of the graph):
+     * 1. If parent has an available stream, take it; break out of loop
+     * 2. If we still don't have stream at the end of the loop, allocate one (from StreamManager)
+     * 3. Add stream to my list so that my children can do this process
+     */
+  }
   
   
 };
