@@ -6,6 +6,7 @@
 
 #include "quark/common.h"
 #include "quark/cuda_backend.h"
+#include "quark/cuda_util.h"
 #include "quark/ops/op_base.h"
 #include "quark/tensor.h"
 
@@ -91,7 +92,7 @@ public:
     BuildGraph(tensor_parents, &graph, &input_op_ids);
 
     // From the graph, build the vector of Pods to execute
-    BuildExecutionOrder(&input_op_ids, &graph);
+    BuildExecutionOrder(graph, &input_op_ids);
   }
 
   // Adds operation to the graph. If graph is compiled, calling this de-compiles the graph and
@@ -111,6 +112,8 @@ private:
   unordered_map<OpId, OpBase<T>*> ops_;
   vector<Pod<T>> execution_pods_;
 
+  StreamManager stream_manager_;
+  
   // Constructs map of tensors to their parent operations
   void BuildTensorParentMap(unordered_map<TensorId, OpId>* tensor_parents) {
     for (const auto& op_pair : ops_) {
@@ -176,7 +179,7 @@ private:
   }
   
   // Helper function to construct the order of execution for the graph
-  void BuildExecutionOrder(std::queue<OpId> *input_op_ids, unordered_map<OpId, EdgeList>* graph) {
+  void BuildExecutionOrder(const unordered_map<OpId, EdgeList>& graph, std::queue<OpId> *input_op_ids) {
     /* while the queue of inputs is not emtpy:
      * 1. Pop the first node of it and add to the sorted list
      * 2. For each child of the node:
@@ -188,57 +191,68 @@ private:
      * if any nodes have edges still: graph is not a DAG
      * store the execution order
      */
+
+    unordered_map<OpId, EdgeList> mutable_graph = graph;
+    unordered_map<OpId, cudaStream_t> op_stream_map;
     unordered_map<OpId, vector<cudaEvent_t>> op_events;
     while (!input_op_ids->empty()) {
       OpId current_op_id = input_op_ids->front();
       OpBase<T>* current_op = ops_[current_op_id];
-      EdgeList* current_op_edges = &(*graph)[current_op_id];
+      EdgeList* current_op_edges = &mutable_graph[current_op_id];
       input_op_ids->pop();
 
       // cudaEvent that signals the current ops completion; only enqueued if necessary
       cudaEvent_t event;
-      bool event_allocated = false;
+      if (current_op_edges->children.size() != 0) {
+        CUDA_CALL(cudaEventCreateWithFlags(&event, cudaEventDisableTiming));
+      }
       
       for (const auto& child_op_id : current_op_edges->children) {
-        EdgeList* child_op_edges = &(*graph)[child_op_id];
+        EdgeList* child_op_edges = &mutable_graph[child_op_id];
         
         // Remove the edge from the current node to this child
         current_op_edges->children.erase(child_op_id);
         child_op_edges->parents.erase(current_op_id);
 
-        // if the node has no parents, add it to the input_nodes queue
+        // Add the event dependency for this child op
+        op_events[child_op_id].push_back(event);
+        
+        // if the node has no more parents, add it to the input_nodes queue
         if (child_op_edges->parents.size() == 0) {
           input_op_ids->push(child_op_id);
-
-          // TODO(Trevor): Add stream scheduling here
-        } else {
-          if (!event_allocated) {
-            CUDA_CALL(cudaEventCreateWithFlags(&event, cudaEventDisableTiming));
-          }
-          
-          // add this ops event to the child op's vector
-          op_events[child_op_id].push_back(event);
-        }
+        }        
       }
-
-      // TODO(Trevor): Add this ops stream insertion here
-      // create the execution pod for the current op
-      Pod<T> current_op_pod(current_op, 0, event, op_events[current_op_id]);
+      
+      // create the execution pod for the current op and store
+      cudaStream_t current_op_stream = AssignStream(current_op_id, graph, op_stream_map);
+      Pod<T> current_op_pod(current_op, current_op_stream, event, op_events[current_op_id]);
       execution_pods_.push_back(current_op_pod);
     }
 
     // If there are any edges remaining in the graph it is not acyclic
-    for (const auto& node : *graph) {
+    for (const auto& node : mutable_graph) {
       QUARK_CHECK(node.second.children.size() != 0, "Cannot compile, graph contains cycles");
     }
   }
 
-  cudaStream_t AssignStream(unordered_map<OpId, cudaStream_t> op_stream_map) {
-    /* For each parent to the current node (make sure we use a complete version of the graph):
-     * 1. If parent has an available stream, take it; break out of loop
-     * 2. If we still don't have stream at the end of the loop, allocate one (from StreamManager)
-     * 3. Add stream to my list so that my children can do this process
-     */
+  // Algorithm to assign streams to operations
+  // For each parent of the current op:
+  //   1. If the parent has an available stream, take it; return
+  // If we did not get a stream from a parent op:
+  //   1. Allocate new stream; return
+  cudaStream_t AssignStream(OpId current_op_id, const unordered_map<OpId, EdgeList>& graph,
+      unordered_map<OpId, cudaStream_t> op_stream_map) {
+    for (const auto& parent_op_id : graph.at(current_op_id).parents) {
+      if (op_stream_map.find(parent_op_id) != op_stream_map.end()) {
+        cudaStream_t stream = op_stream_map[parent_op_id];
+        op_stream_map[current_op_id] = stream;
+        return stream;
+      }
+    }
+
+    cudaStream_t stream = stream_manager_.GetStream();
+    op_stream_map[current_op_id] = stream;
+    return stream;
   }
   
   
