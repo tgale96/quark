@@ -12,17 +12,18 @@ template <typename Type>
 class TensorTest;
 
 // Used to maintain a globaly consistent id system for all Tensor objects 
-class TensorId {
+typedef int64 TensorId;
+class TensorTag {
 public:
-  TensorId() : id_(++count_) {}
-  DISABLE_COPY_ASSIGN_MOVE(TensorId);
-  ~TensorId() = default;
+  TensorTag() : id_(++count_) {}
+  DISABLE_COPY_ASSIGN_MOVE(TensorTag);
+  ~TensorTag() = default;
 
-  int64 id() const { return id_; }
+  TensorId id() const { return id_; }
 
 private:
-  static int64 count_;
-  const int64 id_;
+  static TensorId count_;
+  const TensorId id_;
 };
 
 /**    
@@ -174,10 +175,8 @@ public:
   /**
    * Returns the id of the tensor
    */
-  int64 id() const { return tid_.id(); }
+  TensorId id() const { return tid_.id(); }
   
-  friend struct TensorHash;
-
   template <typename Type>
   friend class TensorTest;
   
@@ -187,7 +186,7 @@ protected:
   int64 size_ = 0;
   size_t capacity_ = 0;
   
-  const TensorId tid_;
+  const TensorTag tid_;
 };
 
 /**

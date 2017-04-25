@@ -2,7 +2,7 @@
 
 namespace quark {
 
-int64 TensorId::count_ = 0;
+int64 TensorTag::count_ = 0;
 
 // TODO(Trevor): make these print in a more organized manner that shows the shape of the tensor
 template <typename T>
