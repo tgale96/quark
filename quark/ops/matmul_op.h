@@ -40,7 +40,6 @@ public:
 
     int64 out_rows = trans_a ? a.shape()[1] : a.shape()[0];
     int64 out_cols = trans_b ? b.shape()[0] : b.shape()[1];
-    std::cout << out_rows << " " << out_cols << std::endl;
     c_->Resize({out_rows, out_cols});
 
     // allocate cublas handle, set ptr mode, and copy args to device

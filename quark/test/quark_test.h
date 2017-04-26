@@ -1,6 +1,7 @@
 #ifndef QUARK_TEST_QUARK_TEST_H_
 #define QUARK_TEST_QUARK_TEST_H_
 
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <gtest/gtest.h>
@@ -29,8 +30,8 @@ public:
   void GetRandData(vector<int64> dims, vector<T> *data) {
     QUARK_CHECK(data != nullptr, "Input pointer must not be nullptr");
     int64 num = Prod(dims);
-    data->reserve(num);
-
+    data->resize(num);
+    
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr;
@@ -40,7 +41,7 @@ public:
     }
   }
 
-  bool CompareData(const T* d1, const T* d2, int64 num) {
+  bool CompareData(const T* d1, const T* d2, int64 num, const double threshold = 0.0) {
     // check the data
     T* h_d1 = new T[num];
     T* h_d2 = new T[num];
@@ -49,7 +50,8 @@ public:
 
     bool res = true;
     for (int i = 0; i < num; ++i) {
-      if (h_d1[i] != h_d2[i]) {
+      double diff = abs(h_d1[i] - h_d2[i]);
+      if (diff > threshold) {
         std::cout << h_d1[i] << " v. " << h_d2[i] << std::endl;
         res = false;
       }

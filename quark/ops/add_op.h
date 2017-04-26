@@ -38,8 +38,10 @@ public:
       vector<int64> tmp = {a.shape()[1], a.shape()[0]};
       QUARK_CHECK(tmp == b.shape(), "Input Tensors a & b must have reverse-ordered dimensions");
     }
-      
-    c_->Resize(a.shape());
+
+    int64 out_rows = trans_a ? a.shape()[1] : a.shape()[0];
+    int64 out_cols = trans_a ? a.shape()[0] : a.shape()[1];
+    c_->Resize({out_rows, out_cols});
 
     // allocate cublas handle, set ptr mode, and copy args to device
     CUBLAS_CALL(cublasCreate(&handle_));

@@ -19,7 +19,7 @@ void quark_gpu_geam(cublasHandle_t handle, const float* alpha, bool trans_a, con
   int n = trans_a ? a.shape()[1] : a.shape()[0];
 
   int lda = trans_a ? n : m;
-  int ldb = lda;
+  int ldb = trans_b ? n : m;
   cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
   cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
   
@@ -34,7 +34,7 @@ void quark_gpu_geam(cublasHandle_t handle, const double* alpha, bool trans_a, co
   int n = trans_a ? a.shape()[1] : a.shape()[0];
 
   int lda = trans_a ? n : m;
-  int ldb = lda;
+  int ldb = trans_b ? n : m;
   cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
   cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
   
@@ -54,24 +54,8 @@ void quark_gpu_gemm(cublasHandle_t handle, const float* alpha, bool trans_a,
   int lda = trans_a ? n : k;
   cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
   cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
-  CUBLAS_CALL(cublasSgemm(handle, transpose_a, transpose_b, m, n, k,
+  CUBLAS_CALL(cublasSgemm(handle, transpose_b, transpose_a, m, n, k,
           alpha, b.data(), ldb, a.data(), lda, beta, c->mutable_data(), c->shape()[1]));
-  
-  // Good with trans
-  // int lda = trans_a ? a.shape()[1] : a.shape()[1];
-  // int ldb = trans_b ? b.shape()[1] : b.shape()[1];
-  // cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
-  // cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
-  // CUBLAS_CALL(cublasSgemm(handle, transpose_a, transpose_b, b.shape()[0], a.shape()[1], b.shape()[1],
-  //         alpha, b.data(), ldb, a.data(), lda, beta, c->mutable_data(), c->shape()[1]));
-  
-  // Good with no_trans
-  // int lda = trans_a ? a.shape()[0] : a.shape()[1];
-  // int ldb = trans_b ? b.shape()[0] : b.shape()[1];
-  // cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
-  // cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
-  // CUBLAS_CALL(cublasSgemm(handle, transpose_a, transpose_b, b.shape()[1], a.shape()[0], b.shape()[0],
-  //         alpha, b.data(), ldb, a.data(), lda, beta, c->mutable_data(), c->shape()[1]));
 }
 
 template <>
@@ -86,7 +70,7 @@ void quark_gpu_gemm(cublasHandle_t handle, const double* alpha, bool trans_a,
   int lda = trans_a ? n : k;
   cublasOperation_t transpose_a = trans_a ? CUBLAS_OP_T : CUBLAS_OP_N;
   cublasOperation_t transpose_b = trans_b ? CUBLAS_OP_T : CUBLAS_OP_N;
-  CUBLAS_CALL(cublasDgemm(handle, transpose_a, transpose_b, m, n, k,
+  CUBLAS_CALL(cublasDgemm(handle, transpose_b, transpose_a, m, n, k,
           alpha, b.data(), ldb, a.data(), lda, beta, c->mutable_data(), c->shape()[1]));
 }
 
