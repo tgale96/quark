@@ -39,8 +39,6 @@ public:
       QUARK_CHECK(tmp == b.shape(), "Input Tensors a & b must have reverse-ordered dimensions");
     }
       
-    // check dims with trans args
-    
     c_->Resize(a.shape());
 
     // allocate cublas handle, set ptr mode, and copy args to device
@@ -51,12 +49,13 @@ public:
 
     vector<T> packed_coeffs = {alpha, beta};
     CUDA_CALL(cudaMemcpy(d_alpha_, packed_coeffs.data(), 2 * sizeof(T), cudaMemcpyHostToDevice));
-
-    LOG(DEBUG) << "Create Add w/ id: " << this->id() << std::endl;
-    LOG(DEBUG) << "Inputs: " << a.id() << " " << b.id() << std::endl;
-    LOG(DEBUG) << "Output: " << c->id() << std::endl;
   }
 
+  DISABLE_COPY_ASSIGN_MOVE(AddOp);
+  ~AddOp() {
+    CudaBackend::Delete(d_alpha_);
+  }
+  
   /**
    * Returns the input Tensors
    */

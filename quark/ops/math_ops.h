@@ -4,6 +4,7 @@
 #include "quark/compute_graph.h"
 #include "quark/common.h"
 #include "quark/ops/add_op.h"
+#include "quark/ops/matmul_op.h"
 
 namespace quark {
 
@@ -15,6 +16,18 @@ void Add(ComputeGraph<T> *cg, T alpha, bool trans_a, const GpuTensor<T>& a,
     T beta, bool trans_b, const GpuTensor<T>& b, GpuTensor<T>* c) {
   shared_ptr<AddOp<T>> op =
     make_shared<AddOp<T>>(alpha, trans_a, a, beta, trans_b, b, c);
+
+  cg->AddOp(op);
+}
+
+/**
+ * Computes the matrix prod of "a" and "b"
+ */
+template <typename T>
+void Matmul(ComputeGraph<T> *cg, T alpha, bool trans_a, const GpuTensor<T>& a,
+    bool trans_b, const GpuTensor<T>& b, GpuTensor<T>* c) {
+  shared_ptr<MatmulOp<T>> op =
+    make_shared<MatmulOp<T>>(alpha, trans_a, a, trans_b, b, c);
 
   cg->AddOp(op);
 }
