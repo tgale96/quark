@@ -1,8 +1,8 @@
-#ifndef QUARK_BACKEND_UTIL_H_
-#define QUARK_BACKEND_UTIL_H_
+#ifndef QUARK_UTIL_BACKEND_UTIL_H_
+#define QUARK_UTIL_BACKEND_UTIL_H_
 
 #include "quark/common.h"
-#include "quark/cuda_util.h"
+#include "quark/util/cuda_util.h"
 
 namespace quark {
 
@@ -23,4 +23,4 @@ void CopyData(int64 num, const T* src, T* dst) {
 
 } // namespace quark
 
-#endif // QUARK_BACKEND_UTIL_H_
+#endif // QUARK_UTIL_BACKEND_UTIL_H_

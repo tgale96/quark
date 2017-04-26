@@ -5,70 +5,21 @@
 
 #include "quark/common.h"
 #include "quark/tensor.h"
+#include "quark/test/quark_test.h"
 
 namespace quark {
 
 // Test fixture to run typed tests
 template <typename Type>
-class TensorTest : public ::testing::Test {
+class TensorTest : public QuarkTest<typename Type::T> {
 public:
-  void SetUp() {
-    std::srand(std::time(0));
-  }
 
-  vector<int64> GetRandDims() {
-    int dims = std::rand() % 10 + 1;
-
-    vector<int64> shape;
-    for (int i = 0; i < dims; ++i) {
-      shape.push_back(int64(std::rand() % 5 + 1));
-    }
-
-    return shape;
-  }
-
-  template <typename T>
-  void GetRandData(vector<int64> dims, vector<T> *data) {
-    QUARK_CHECK(data != nullptr, "Input pointer must not be nullptr");
-    int64 num = Prod(dims);
-    data->reserve(num);
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> distr;
-    
-    for (int i = 0; i < num; ++i) {
-      (*data)[i] = (T)distr(gen);
-    }
-  }
-  
   template <typename T, typename Backend>
   size_t GetCapacity(const Tensor<T, Backend>& t) {
     return t.capacity_;
   }
 
-  template <typename T>
-  bool CompareData(const T* d1, const T* d2, int64 num) {
-    // check the data
-    T* h_d1 = new T[num];
-    T* h_d2 = new T[num];
-    CUDA_CALL(cudaMemcpy(h_d1, d1, num * sizeof(T), cudaMemcpyDefault));
-    CUDA_CALL(cudaMemcpy(h_d2, d2, num * sizeof(T), cudaMemcpyDefault));
-
-    bool res = true;
-    for (int i = 0; i < num; ++i) {
-      if (h_d1[i] != h_d2[i]) {
-        res = false;
-      }
-    }
-    
-    delete[] h_d1;
-    delete[] h_d2;
-    return res;
-  }
-
 protected:
-
 };
 
 // Hack to get gtest to run with multiple test types

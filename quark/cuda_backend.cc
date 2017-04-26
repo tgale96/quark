@@ -1,5 +1,5 @@
 #include "quark/cuda_backend.h"
-#include "quark/cuda_util.h"
+#include "quark/util/cuda_util.h"
 
 namespace quark {
 

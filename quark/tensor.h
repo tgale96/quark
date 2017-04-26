@@ -1,10 +1,10 @@
 #ifndef QUARK_TENSOR_H_
 #define QUARK_TENSOR_H_
 
-#include "quark/backend_util.h"
 #include "quark/common.h"
 #include "quark/cpu_backend.h"
 #include "quark/cuda_backend.h"
+#include "quark/util/backend_util.h"
 
 namespace quark {
 
@@ -69,7 +69,10 @@ public:
     Resize(shape);
     CopyData(data.size(), data.data(), data_);
   }
-  
+
+  // TODO(Trevor): Having these copy constructors is very dangerous with the global tensor id
+  // system. Allowing copying can make issues with the graph compilation process. Consider
+  // removing these and requiring the user to do some more explicit form of copying to do this.
   /**
    * Creates a tensor by copying a different tensor with an arbitrary backend.
    */
@@ -79,7 +82,7 @@ public:
     Copy(other);
   }
 
-  // TODO(Trevor): is there a way to have these copy constructors consolidated into
+  // TODO(Trevor): Is there a way to have these copy constructors consolidated into
   // a single function? The first one should be able to handle both, but the
   // compiler seems to look for this function when the backend match.
   explicit Tensor(const Tensor<T, Backend>& other) {
@@ -189,11 +192,25 @@ protected:
   const TensorTag tid_;
 };
 
+// Aliases for convenience
+template <typename T>
+using GpuTensor = Tensor<T, CudaBackend>;
+
+template <typename T>
+using CpuTensor = Tensor<T, CpuBackend>;
+
 /**
  * Overloaded output operator for Tensor class w/ CpuBackend.
  */
 template <typename T>
-std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
+std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t) {
+  const T* data = t.data();
+  for (int i = 0 ; i < t.size(); ++i) {
+    stream << data[i] << " ";
+  }
+  stream << std::endl;
+  return stream;
+}
 
 /**
  * Overloaded output operator for Tensor class w/ CudaBackend. This is a potentially
@@ -201,7 +218,11 @@ std::ostream& operator<<(std::ostream& stream, const Tensor<T, CpuBackend>& t);
  * Tensor.
  */
 template <typename T>
-std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t);
+std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t) {
+  Tensor<T, CpuBackend> cpu_t(t);
+  stream << cpu_t;
+  return stream;
+}
 
 } // namespace quark
 

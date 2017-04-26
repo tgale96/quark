@@ -4,7 +4,7 @@ CC=g++-mp-4.9
 CXX_FLAGS=-std=c++11
 INCLUDE=-I. -I/Developer/NVIDIA/CUDA-7.5/include/
 LDFLAGS=-L/Developer/NVIDIA/CUDA-7.5/lib
-LIB=-lcudart
+LIB=-lcudart -lcublas
 EXE=main
 NVCC=nvcc
 Q=@

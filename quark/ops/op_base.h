@@ -1,13 +1,10 @@
 #ifndef QUARK_OPS_OP_BASE_H_
 #define QUARK_OPS_OP_BASE_H_
 
-#include "quark/cuda_util.h"
 #include "quark/tensor.h"
+#include "quark/util/cuda_util.h"
 
 namespace quark {
-
-template <typename T>
-using GpuTensor = Tensor<T, CudaBackend>;
 
 // Used to maintain a globally consisten id system for all Ops
 typedef int64 OpId;
@@ -65,12 +62,12 @@ public:
   /**
    * Returns vector of the input Tensors to the op
    */
-  virtual const vector<GpuTensor<T>>& inputs() const = 0;
+  virtual vector<const GpuTensor<T>*> inputs() const = 0;
 
   /**
    * Returns vector of the output Tensors of the op
    */
-  virtual const vector<GpuTensor<T>>& outputs() const = 0;
+  virtual vector<const GpuTensor<T>*> outputs() const = 0;
 
   /**
    * Returns the id of the operation

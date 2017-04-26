@@ -19,6 +19,7 @@ typedef int64_t int64;
 typedef int32_t int32;
 
 // commonly used std lib objects
+using std::make_shared;
 using std::shared_ptr;
 using std::size_t;
 using std::string;
@@ -44,6 +45,18 @@ using std::vector;
     string err_str = file + "(" + line + "): ";     \
     throw std::runtime_error(err_str + message);    \
   }  
+
+// TODO(Trevor): Extend logging functionality with different logging modes
+// {INFO, DEBUG, ERROR}. Clean up method for switching off different types
+// of logging
+#define LOG(mode)                               \
+  Log(#mode, __FILE__, to_string(__LINE__))
+
+inline std::ostream& Log(string mode, string file, string line) {
+  string err_str = file + "(" + line + "): ";
+  std::cout << "(" << mode << ") " << err_str;
+  return std::cout;
+}
 
 // disables copy, move-copy, copy-assignment, and move-assignment operators
 #define DISABLE_COPY_ASSIGN_MOVE(class_name)                 \
