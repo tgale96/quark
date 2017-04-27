@@ -21,10 +21,6 @@ int main() {
   int max_iter = 100;
   float learning_rate = .01;
   
-  // cout << data.shape()[0] << " x " << data.shape()[1] << endl;
-  // cout << labels.shape()[0] << " x " << labels.shape()[1] << endl;
-  // cout << beta.shape()[0] << " x " << beta.shape()[1] << endl;
-  
   // Intermediate results
   Tensor<float, CudaBackend> xb, y_m_xb, loss, grad, new_beta;
 
@@ -51,4 +47,22 @@ int main() {
     chrono::duration<double> run_time = chrono::system_clock::now() - start_time;
     cout << "[elapsed_time: " << run_time.count() << "] iter " << i << ", regularized_mse " << loss;
   }
+
+  // Write beta to file
+  WriteToTextFile("beta", beta);
+
+  // Compute MSE on test set
+  Tensor<float, CudaBackend> test_data, test_labels;
+  LoadFromTextFile("./dummy_data/small_test.data", &test_data);
+  LoadFromTextFile("./dummy_data/small_test.labels", &test_labels);
+
+  int num_test_samples = test_data.shape()[0];
+  ComputeGraph<float> tg;
+
+  Matmul(&tg, 1.0f, false, test_data, false, beta, &xb);
+  Add(&tg, 1.0f, false, test_labels, -1.0f, false, xb, &y_m_xb);
+  Matmul(&tg, 1.0f / num_test_samples, true, y_m_xb, false, y_m_xb, &loss);
+  tg.Compile();
+  tg.Execute();
+  cout << "Test MSE: " << loss;
 }

@@ -73,6 +73,26 @@ void InitRandomTensor(vector<int64> shape, Tensor<T, Backend>* t) {
   CopyData(data.size(), data.data(), t->mutable_data());
 }
 
+/**
+ * @brief Writes Tensor to input file. Each row (or outer most dimension) is places on a new line
+ */
+template <typename T, typename Backend>
+void WriteToTextFile(string file_name, const Tensor<T, Backend>& t) {
+  std::ofstream f(file_name);
+  Tensor<T, CpuBackend> h_t(t.shape());
+  h_t.Copy(t);
+
+  int64 outer_dim = h_t.shape()[0];
+  int64 inner_dim = Prod(h_t.shape()) / outer_dim;
+
+  for (int i = 0; i < outer_dim; ++i) {
+    for (int j = 0; j < inner_dim; ++j) {
+      f << h_t.data()[i * inner_dim + j] << " ";
+    }
+    f << std::endl;
+  }  
+}
+
 } // namespace quark
 
 #endif // QUARK_IO_H_
