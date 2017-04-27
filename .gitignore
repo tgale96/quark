@@ -10,3 +10,4 @@ main
 
 quark/test/run_tests
 dummy_data
+quark.out

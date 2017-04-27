@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #include "quark/compute_graph.h"
@@ -20,9 +21,9 @@ int main() {
   int max_iter = 100;
   float learning_rate = .01;
   
-  cout << data.shape()[0] << " x " << data.shape()[1] << endl;
-  cout << labels.shape()[0] << " x " << labels.shape()[1] << endl;
-  cout << beta.shape()[0] << " x " << beta.shape()[1] << endl;
+  // cout << data.shape()[0] << " x " << data.shape()[1] << endl;
+  // cout << labels.shape()[0] << " x " << labels.shape()[1] << endl;
+  // cout << beta.shape()[0] << " x " << beta.shape()[1] << endl;
   
   // Intermediate results
   Tensor<float, CudaBackend> xb, y_m_xb, loss, grad, new_beta;
@@ -42,11 +43,12 @@ int main() {
       
   cg.Compile();
 
-  for (int i = 0; i < max_iter; ++i) {
+  chrono::time_point<chrono::system_clock> start_time = chrono::system_clock::now();
+  for (int i = 0; i < max_iter; ++i) {    
     cg.Execute();
-
-    cout << "loss: " << loss;
-    
     beta.Copy(new_beta);
+
+    chrono::duration<double> run_time = chrono::system_clock::now() - start_time;
+    cout << "[elapsed_time: " << run_time.count() << "] iter " << i << ", regularized_mse " << loss;
   }
 }
