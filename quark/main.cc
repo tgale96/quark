@@ -39,6 +39,7 @@ int main() {
       
   cg.Compile();
 
+  // Train the model
   chrono::time_point<chrono::system_clock> start_time = chrono::system_clock::now();
   for (int i = 0; i < max_iter; ++i) {    
     cg.Execute();
@@ -48,9 +49,9 @@ int main() {
     cout << "[elapsed_time: " << run_time.count() << "] iter " << i << ", regularized_mse " << loss;
   }
 
-  // Write beta to file
+  // Save the learned parameters
   WriteToTextFile("beta", beta);
-
+  
   // Compute MSE on test set
   Tensor<float, CudaBackend> test_data, test_labels;
   LoadFromTextFile("./dummy_data/small_test.data", &test_data);
