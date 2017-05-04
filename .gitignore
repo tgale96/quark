@@ -8,6 +8,7 @@
 *.d
 main
 
-quark/test/run_tests
+run_tests
 dummy_data
 quark.out
+SparkLinReg.py
