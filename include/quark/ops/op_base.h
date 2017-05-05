@@ -1,7 +1,7 @@
 #ifndef QUARK_OPS_OP_BASE_H_
 #define QUARK_OPS_OP_BASE_H_
 
-#include "quark/tensor.h"
+#include "quark/tensor/tensor.h"
 #include "quark/util/cuda_util.h"
 
 namespace quark {

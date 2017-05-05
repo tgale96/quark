@@ -1,5 +1,5 @@
-#ifndef QUARK_CUDA_BACKEND_H_
-#define QUARK_CUDA_BACKEND_H_
+#ifndef QUARK_TENSOR_CUDA_BACKEND_H_
+#define QUARK_TENSOR_CUDA_BACKEND_H_
 
 #include "quark/common.h"
 
@@ -34,4 +34,4 @@ private:
 
 } // namespace quark
 
-#endif // QUARK_CUDA_BACKEND_H_
+#endif // QUARK_TENSOR_CUDA_BACKEND_H_

@@ -4,7 +4,7 @@
 #include <random>
 
 #include "quark/common.h"
-#include "quark/tensor.h"
+#include "quark/tensor/tensor.h"
 #include "quark/test/quark_test.h"
 
 namespace quark {

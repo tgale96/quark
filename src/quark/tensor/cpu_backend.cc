@@ -1,6 +1,4 @@
-#include <cstring>
-
-#include "quark/cpu_backend.h"
+#include "quark/tensor/cpu_backend.h"
 
 namespace quark {
 

@@ -1,13 +1,13 @@
-#ifndef QUARK_COMPUTE_GRAPH_H_
-#define QUARK_COMPUTE_GRAPH_H_
+#ifndef QUARK_COMPUTE_GRAPH_COMPUTE_GRAPH_H_
+#define QUARK_COMPUTE_GRAPH_COMPUTE_GRAPH_H_
 
 #include <queue>
 #include <unordered_set>
 
 #include "quark/common.h"
-#include "quark/cuda_backend.h"
 #include "quark/ops/op_base.h"
-#include "quark/tensor.h"
+#include "quark/tensor/cuda_backend.h"
+#include "quark/tensor/tensor.h"
 #include "quark/util/cuda_util.h"
 
 namespace quark {
@@ -317,4 +317,4 @@ private:
 
 } // namespace quark
 
-#endif // QUARK_COMPUTE_GRAPH_H_
+#endif // QUARK_COMPUTE_GRAPH_COMPUTE_GRAPH_H_

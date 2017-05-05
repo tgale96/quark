@@ -1,5 +1,5 @@
-#ifndef QUARK_IO_H_
-#define QUARK_IO_H_
+#ifndef QUARK_TENSOR_IO_H_
+#define QUARK_TENSOR_IO_H_
 
 #include <cstdlib>
 #include <fstream>
@@ -8,7 +8,7 @@
 #include <string>
 
 #include "quark/common.h"
-#include "quark/tensor.h"
+#include "quark/tensor/tensor.h"
 #include "quark/util/backend_util.h"
 
 namespace quark {
@@ -95,4 +95,4 @@ void WriteToTextFile(string file_name, const Tensor<T, Backend>& t) {
 
 } // namespace quark
 
-#endif // QUARK_IO_H_
+#endif // QUARK_TENSOR_IO_H_

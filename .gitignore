@@ -6,7 +6,8 @@
 # ignore compilation output
 *.o
 *.d
-main
+lib
+build
 
 makefile.config
 run_tests
