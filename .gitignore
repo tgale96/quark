@@ -8,7 +8,9 @@
 *.d
 main
 
+makefile.config
 run_tests
 dummy_data
 quark.out
 SparkLinReg.py
+

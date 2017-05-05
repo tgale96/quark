@@ -1,6 +1,11 @@
-# TODO(Trevor): The makefile currently outputs .o and .d files into the source
-# directory. Move the build output to a build directory to reduce clutter
-CC=g++-mp-4.9
+# Load the configuration file
+CONFIG_FILE=makefile.config
+ifeq ($(shell find . -name $(CONFIG_FILE)),)
+$(error $(CONFIG_FILE) not found. See README.md for instructions)
+endif
+include $(CONFIG_FILE)
+
+# Basic flags and variables
 CXX_FLAGS=-std=c++11
 DEP_FLAGS=-MMD -MP
 NVCC=nvcc
@@ -9,8 +14,8 @@ BUILD_DIR=build
 Q=@
 
 # Lib env variables
-INCLUDE=-I. -I/Developer/NVIDIA/CUDA-7.5/include/
-LDFLAGS=-L/Developer/NVIDIA/CUDA-7.5/lib
+INCLUDE=-I. -I$(CUDA_DIR)/include
+LDFLAGS=-L$(CUDA_DIR)/$(CUDA_LIB)
 LIB=-lcudart -lcublas
 EXE=main
 
@@ -20,8 +25,8 @@ CXX_OBJ=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
 DEPS=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR/%.d)
 
 # Test env variables
-TEST_INCLUDE=-I//Users/trevorgale/googletest-release-1.8.0/googletest/include $(INCLUDE)
-TEST_LDFLAGS=-L/Users/trevorgale/googletest-release-1.8.0/googletest $(LDFLAGS)
+TEST_INCLUDE=-I$(GTEST_DIR)/include $(INCLUDE)
+TEST_LDFLAGS=-L$(GTEST_DIR) $(LDFLAGS)
 TEST_LIB=-lgtest $(LIB)
 TEST_EXE=$(BUILD_DIR)/test/run_tests
 TEST_EXE_LINK=run_tests
