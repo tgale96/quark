@@ -1,4 +1,4 @@
-#include "quark/util/math_util.h"
+#include "quark/util/math_functions.h"
 
 namespace quark {
 

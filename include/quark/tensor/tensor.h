@@ -1,9 +1,9 @@
-#ifndef QUARK_TENSOR_H_
-#define QUARK_TENSOR_H_
+#ifndef QUARK_TENSOR_TENSOR_H_
+#define QUARK_TENSOR_TENSOR_H_
 
 #include "quark/common.h"
-#include "quark/cpu_backend.h"
-#include "quark/cuda_backend.h"
+#include "quark/tensor/cpu_backend.h"
+#include "quark/tensor/cuda_backend.h"
 #include "quark/util/backend_util.h"
 
 namespace quark {
@@ -226,4 +226,4 @@ std::ostream& operator<<(std::ostream& stream, const Tensor<T, CudaBackend>& t) 
 
 } // namespace quark
 
-#endif // QUARK_TENSOR_H_
+#endif // QUARK_TENSOR_TENSOR_H_

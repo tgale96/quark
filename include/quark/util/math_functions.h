@@ -1,7 +1,7 @@
-#ifndef QUARK_UTIL_MATH_UTIL_H_
-#define QUARK_UTIL_MATH_UTIL_H_
+#ifndef QUARK_UTIL_MATH_FUNCTIONS_H_
+#define QUARK_UTIL_MATH_FUNCTIONS_H_
 
-#include "quark/tensor.h"
+#include "quark/tensor/tensor.h"
 #include "quark/util/cuda_util.h"
 
 namespace quark {
@@ -18,4 +18,4 @@ void quark_gpu_gemm(cublasHandle_t handle, const T* alpha, bool trans_a,
 
 } // namespace quark
 
-#endif // QUARK_UTIL_MATH_UTIL_H_
+#endif // QUARK_UTIL_MATH_FUNCTIONS_H_

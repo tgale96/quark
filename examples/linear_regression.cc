@@ -2,10 +2,10 @@
 #include <iostream>
 
 #include "quark/compute_graph.h"
-#include "quark/io.h"
 #include "quark/ops/math_ops.h"
 #include "quark/ops/utility_ops.h"
-#include "quark/tensor.h"
+#include "quark/tensor/io.h"
+#include "quark/tensor/tensor.h"
 
 using namespace std;
 using namespace quark;

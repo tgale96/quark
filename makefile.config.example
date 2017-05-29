@@ -1,0 +1,19 @@
+# Example configuration file for compiling Quark. Copy this file to "makefile.config"
+# and alter the following variables with the appropriate paths for your system
+
+# C++ compiler to use
+CC=g++-mp-4.9
+
+# Absolute path to CUDA installation
+#
+# Note: When building, Quark assumes the CUDA libraries are in $(CUDA_DIR)/lib,
+# if your machine has the appropriate libraries stored in $(CUDA_DIR)/lib64,
+# you should set the CUDA_LIB variable below.
+CUDA_DIR=/Developer/NVIDIA/CUDA-7.5
+CUDA_LIB=lib
+
+# Absolute path to GTest installation (to build the test suite)
+#
+# Note: when building Quark assumes the GTest headers are in $(GTEST_DIR)/include,
+# and that the GTest static lib is in $(GTEST_DIR).
+GTEST_DIR=/Users/trevorgale/googletest-release-1.8.0/googletest

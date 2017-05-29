@@ -1,4 +1,4 @@
-#include "quark/tensor.h"
+#include "quark/tensor/tensor.h"
 
 namespace quark {
 

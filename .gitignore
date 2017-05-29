@@ -6,8 +6,12 @@
 # ignore compilation output
 *.o
 *.d
-main
+lib
+build
 
-quark/test/run_tests
+makefile.config
+run_tests
 dummy_data
 quark.out
+SparkLinReg.py
+
