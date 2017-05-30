@@ -9,7 +9,7 @@ include $(CONFIG_FILE)
 PROJECT=quark
 CXX_FLAGS=-std=c++11
 DEP_FLAGS=-MMD -MP
-NVCC=nvcc
+NVCC=$(CUDA_DIR)/bin/nvcc
 SRC_DIR=src/$(PROJECT)
 BUILD_DIR=build
 EXAMPLE_DIR=examples
@@ -26,6 +26,11 @@ LIBS=-lcudart -lcublas -lquark
 CXX_FILES=$(shell find $(SRC_DIR) -name "*.cc" ! -name "*_test.cc")
 CXX_OBJ=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
 LIB_DEPS=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR/%.d)
+
+# Gather list of cu files to build
+CU_FILES=$(shell find $(SRC_DIR) -name "*.cu")
+CU_OBJ=$(CU_FILES:$(SRC_DIR)/%.cu=$(BUILD_DIR)/cuda/%.o)
+CU_DEPS=$(CU_FILES:$(SRC_DIR)/%.cu=$(BUILD_DIR)/cuda/%.d)
 
 # Test env variables
 TEST_INCLUDE=-I$(GTEST_DIR)/include $(INCLUDE)
@@ -47,6 +52,7 @@ EXAMPLE_DEPS=$(EXAMPLE_CXX_FILES:%.cc=$(BUILD_DIR)/%.d)
 DIR_TREE=$(shell find $(SRC_DIR) -type d)
 BUILD_DIR_TREE=$(DIR_TREE:$(SRC_DIR)%=$(BUILD_DIR)%)
 BUILD_DIR_TREE+=$(BUILD_DIR)/$(EXAMPLE_DIR)
+BUILD_DIR_TREE+=$(DIR_TREE:$(SRC_DIR)%=$(BUILD_DIR)/cuda/%)
 
 .PHONY: all clean test examples lib
 
@@ -77,11 +83,16 @@ $(BUILD_DIR)/$(EXAMPLE_DIR)/%: $(EXAMPLE_DIR)/%.cc $(STATIC_LIB) | $(BUILD_DIR_T
 
 examples: $(EXAMPLE_BIN)
 
+$(BUILD_DIR)/cuda/%.o: $(SRC_DIR)/%.cu | $(BUILD_DIR_TREE)
+	@echo NVCC $<
+	$(NVCC) -std=c++11 $(INCLUDE) -c $< -o $@
+	@echo $(CU_OBJ)
+
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc | $(BUILD_DIR_TREE)
 	@echo CXX $<
 	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) $(INCLUDE) -c $< -o $@
 
-$(STATIC_LIB): $(CXX_OBJ)
+$(STATIC_LIB): $(CXX_OBJ) $(CU_OBJ)
 	$(Q)mkdir -p $(LIB_DIR)
 	@echo AR -o $@
 	$(Q)ar rcs $@ $(CXX_OBJ)

@@ -27,16 +27,9 @@ using std::to_string;
 using std::unordered_map;
 using std::vector;
 
+// TODO(Trevor): These checking functions should be replaced with GLOG
+// CHECK_* macros once GLOG is integrated.
 // Used for internal error checking
-#define QUARK_ASSERT(result, message)             \
-  if (!(result)) {                                \
-    string file = __FILE__;                       \
-    string line = to_string(__LINE__);            \
-    string err_str = file + "(" + line + "): ";   \
-    std::cout << err_str << message;              \
-    std::terminate;                               \
-  }
-
 // used for checking user input
 #define QUARK_CHECK(result, message)                \
   if (!(result)) {                                  \
@@ -63,7 +56,7 @@ inline std::ostream& Log(string mode, string file, string line) {
   class_name(const class_name& other) = delete;              \
   class_name(class_name&& other) = delete;                   \
   class_name& operator=(const class_name& rhs) = delete;     \
-  class_name& operator=(class_name&& rhs) = delete;          \
+  class_name& operator=(class_name&& rhs) = delete
  
 
 // TODO(Trevor): Should probably move this into a utility file

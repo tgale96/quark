@@ -42,8 +42,8 @@ private:
   GpuTensor<T>* output_tensor_;
   
   void LaunchKernel(cudaStream_t stream) override {
-    QUARK_ASSERT(input_tensor_.size() == output_tensor_->size(), "Input and output tensors are not the same size");
-    QUARK_ASSERT(input_tensor_.shape() == output_tensor_->shape(), "Input and output tensors are not the same shape");
+    QUARK_CHECK(input_tensor_.size() == output_tensor_->size(), "Input and output tensors are not the same size");
+    QUARK_CHECK(input_tensor_.shape() == output_tensor_->shape(), "Input and output tensors are not the same shape");
         
     size_t bytes = input_tensor_.size() * sizeof(T);
     CUDA_CALL(cudaMemcpyAsync(output_tensor_->mutable_data(), input_tensor_.data(), bytes, cudaMemcpyDeviceToDevice, stream));

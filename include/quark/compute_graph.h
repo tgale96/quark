@@ -104,7 +104,7 @@ public:
   // Compile() must be called again before execution.
   // TODO(Trevor): Rename this method to avoid conflict with the "AddOp" class
   void AddOp(shared_ptr<OpBase<T>> op) {
-    QUARK_ASSERT(ops_.find(op->id()) == ops_.end(), "Operation already exists in the graph");
+    QUARK_CHECK(ops_.find(op->id()) == ops_.end(), "Operation already exists in the graph");
 
     LOG(DEBUG) << "Adding op " << to_string(op->id()) << std::endl;
     
@@ -251,7 +251,7 @@ private:
       
       for (const auto& child_op_id : current_op_edges->children) {
         LOG(DEBUG) << "Hello!" << std::endl;
-        // QUARK_ASSERT(ops_[child_op_id], "Child op is nullptr");
+        // QUARK_CHECK(ops_[child_op_id], "Child op is nullptr");
         // LOG(DEBUG) << "Child op: " << child_op_id << std::endl;
               
         EdgeList* child_op_edges = &mutable_graph[child_op_id];

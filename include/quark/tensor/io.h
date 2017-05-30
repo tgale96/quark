@@ -47,7 +47,7 @@ void LoadFromTextFile(const string file_name, Tensor<T, Backend>* t) {
       data.push_back(val);
       line_size++;
     }
-    QUARK_ASSERT(line_size == cols,
+    QUARK_CHECK(line_size == cols,
         "All lines in input file must contain the same number of data points");
   }
 

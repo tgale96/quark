@@ -9,16 +9,14 @@
 
 namespace quark {
 
-// Macro for cuda error checking. All calls that
-// return cudaError_t should be wrapped with this
+// Macro for cuda error checking. All calls that return cudaError_t
+// should be wrapped with this. Note: do {...{ while(0) wrapping is
+// to avoid extra semi-colon errors from nvcc
 #define CUDA_CALL(code)                                                 \
-  if (code != cudaSuccess) {                                            \
-    string file = __FILE__;                                             \
-    string line = to_string(__LINE__);                                  \
-    string err_str = cudaGetErrorString(code);                          \
-    std::cout << file << "(" << line << "): " << err_str << std::endl;  \
-    std::terminate;                                                     \
-  }                                                                     \
+  do {                                                                  \
+    cudaError_t status = code;                                          \
+    QUARK_CHECK(status == cudaSuccess, cudaGetErrorString(status));     \
+  } while(0)                                                             
 
 // Handler function for cublas errors
 inline const string cublasGetErrorString(cublasStatus_t status) {
@@ -38,21 +36,22 @@ inline const string cublasGetErrorString(cublasStatus_t status) {
   case CUBLAS_STATUS_EXECUTION_FAILED:
     return "CUBLAS_STATUS_EXECUTION_FAILED"; 
   case CUBLAS_STATUS_INTERNAL_ERROR:
-    return "CUBLAS_STATUS_INTERNAL_ERROR"; 
+    return "CUBLAS_STATUS_INTERNAL_ERROR";
+  case CUBLAS_STATUS_NOT_SUPPORTED:
+    return "CUBLAS_STATUS_NOT_SUPPORTED";
+  case CUBLAS_STATUS_LICENSE_ERROR:
+    return "CUBLAS_STATUS_LICENSE_ERROR";
   }
   return "unknown error";
 }
 
 // Macro for cublas error checking. All calls that
-// return cublasError_t should be wrapped with this
+// return cublasStatus_t should be wrapped with this
 #define CUBLAS_CALL(code)                                               \
-  if (code != CUBLAS_STATUS_SUCCESS) {                                  \
-    string file = __FILE__;                                             \
-    string line = to_string(__LINE__);                                  \
-    string err_str = cublasGetErrorString(code);                        \
-    std::cout << file << "(" << line << "): " << err_str << std::endl;  \
-    std::terminate;                                                     \
-  }                                                                     \
+  do {                                                                  \
+    cublasStatus_t status = code;                                          \
+    QUARK_CHECK(status == CUBLAS_STATUS_SUCCESS, cublasGetErrorString(status)); \
+  } while(0)
 
 // Allocates cudaStreams and keeps track of them
 // so that they can be cleaned up appropriately
@@ -81,6 +80,13 @@ public:
 private:
   vector<cudaStream_t> streams_;
 };
+
+// Block size used for custom kernels
+const int QUARK_CUDA_BLOCK_SIZE = 512;
+
+inline int64 QUARK_GET_NUM_BLOCK(const int n) {
+  return ceil(float(n) / QUARK_CUDA_BLOCK_SIZE);
+}
 
 } // namespace quark
 

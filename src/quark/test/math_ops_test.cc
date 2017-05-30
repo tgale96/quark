@@ -18,8 +18,8 @@ public:
   }
 
   vector<T> ComputeSum(const T* d1, const T* d2, int64 num) {
-    QUARK_ASSERT(d1, "d1 ptr must not be nullptr");
-    QUARK_ASSERT(d2, "d2 ptr must not be nullptr");
+    QUARK_CHECK(d1, "d1 ptr must not be nullptr");
+    QUARK_CHECK(d2, "d2 ptr must not be nullptr");
 
     T* h_d1 = new T[num];
     T* h_d2 = new T[num];
@@ -38,8 +38,8 @@ public:
   }
 
   vector<T> TransposeMatrix(const T* d, int rows, int cols) {    
-    QUARK_ASSERT(d, "d must not be nullptr");
-    QUARK_ASSERT(rows > 0 && cols > 0, "Dims must be > 0");
+    QUARK_CHECK(d, "d must not be nullptr");
+    QUARK_CHECK(rows > 0 && cols > 0, "Dims must be > 0");
 
     T* h_d = new T[rows*cols];
     CUDA_CALL(cudaMemcpy(h_d, d, rows * cols * sizeof(T), cudaMemcpyDefault));
@@ -56,8 +56,8 @@ public:
   }
 
   vector<T> ComputeProduct(const T* d1, const T* d2, int m, int n, int k) {
-    QUARK_ASSERT(d1, "d1 ptr must not be nullptr");
-    QUARK_ASSERT(d2, "d2 ptr must not be nullptr");
+    QUARK_CHECK(d1, "d1 ptr must not be nullptr");
+    QUARK_CHECK(d2, "d2 ptr must not be nullptr");
 
     T* h_d1 = new T[m * k];
     T* h_d2 = new T[k * n];

@@ -12,9 +12,9 @@ namespace quark {
  */
 template <typename T>
 void CopyData(int64 num, const T* src, T* dst) {
-  QUARK_ASSERT(src != nullptr, "Src pointer must not be nullptr");
-  QUARK_ASSERT(dst != nullptr, "Dst pointer must not be nullptr");
-  QUARK_ASSERT(num >= 0, "Cannot copy negative number of elements");
+  QUARK_CHECK(src != nullptr, "Src pointer must not be nullptr");
+  QUARK_CHECK(dst != nullptr, "Dst pointer must not be nullptr");
+  QUARK_CHECK(num >= 0, "Cannot copy negative number of elements");
   
   if (num == 0) return;
 
