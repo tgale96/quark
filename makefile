@@ -1,3 +1,6 @@
+# TODO(Trevor): Build directory cuts off "quark/" directory. Correct this so that
+# cpp src tree inside build dir mirrors the src tree
+
 # Load the configuration file
 CONFIG_FILE=makefile.config
 ifeq ($(shell find . -name $(CONFIG_FILE)),)
@@ -26,6 +29,9 @@ LIBS=-lcudart -lcublas -lquark
 CXX_FILES=$(shell find $(SRC_DIR) -name "*.cc" ! -name "*_test.cc")
 CXX_OBJ=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
 LIB_DEPS=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR/%.d)
+
+# Env variables for nvcc build
+NVCC_FLAGS=-std=c++11
 
 # Gather list of cu files to build
 CU_FILES=$(shell find $(SRC_DIR) -name "*.cu")
@@ -73,20 +79,20 @@ $(BUILD_DIR)/%_test.o: $(SRC_DIR)/%_test.cc | $(BUILD_DIR_TREE)
 # when this occurs. Leaving this for now...
 $(TEST_BIN): $(TEST_CXX_OBJ) $(STATIC_LIB) | $(BUILD_DIR_TREE)
 	@echo CXX -o $@
-	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) -o $@ $^ $(TEST_LDFLAGS) $(TEST_LIB)
+	$(Q)$(CC) $(CXX_FLAGS) -o $@ $^ $(TEST_LDFLAGS) $(TEST_LIB)
 
 test: $(TEST_BIN)
 
 $(BUILD_DIR)/$(EXAMPLE_DIR)/%: $(EXAMPLE_DIR)/%.cc $(STATIC_LIB) | $(BUILD_DIR_TREE)
-	@echo CXX -o $<
+	@echo CXX -o $@
 	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) -o $@ $< $(INCLUDE) $(LDFLAGS) $(LIBS)
 
 examples: $(EXAMPLE_BIN)
 
 $(BUILD_DIR)/cuda/%.o: $(SRC_DIR)/%.cu | $(BUILD_DIR_TREE)
 	@echo NVCC $<
-	$(NVCC) -std=c++11 $(INCLUDE) -c $< -o $@
-	@echo $(CU_OBJ)
+	$(Q)$(NVCC) $(NVCC_FLAGS) $(INCLUDE) -M $< -o $(@:%.o=%.d) -odir $(@D)
+	$(Q)$(NVCC) $(NVCC_FLAGS) $(INCLUDE) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc | $(BUILD_DIR_TREE)
 	@echo CXX $<
@@ -95,7 +101,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc | $(BUILD_DIR_TREE)
 $(STATIC_LIB): $(CXX_OBJ) $(CU_OBJ)
 	$(Q)mkdir -p $(LIB_DIR)
 	@echo AR -o $@
-	$(Q)ar rcs $@ $(CXX_OBJ)
+	$(Q)ar rcs $@ $(CXX_OBJ) $(CU_OBJ)
 
 lib: $(STATIC_LIB)
 
@@ -105,3 +111,4 @@ clean:
 -include $(LIB_DEPS)
 -include $(TEST_DEPS)
 -include $(EXAMPLE_DEPS)
+-include $(CU_DEPS)
