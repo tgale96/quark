@@ -1,6 +1,3 @@
-# TODO(Trevor): Build directory cuts off "quark/" directory. Correct this so that
-# cpp src tree inside build dir mirrors the src tree
-
 # Load the configuration file
 CONFIG_FILE=makefile.config
 ifeq ($(shell find . -name $(CONFIG_FILE)),)
@@ -13,7 +10,7 @@ PROJECT=quark
 CXX_FLAGS=-std=c++11
 DEP_FLAGS=-MMD -MP
 NVCC=$(CUDA_DIR)/bin/nvcc
-SRC_DIR=src/$(PROJECT)
+SRC_DIR=src
 BUILD_DIR=build
 EXAMPLE_DIR=examples
 LIB_DIR=lib
@@ -23,31 +20,31 @@ Q=@
 # Env variables common to all builds
 INCLUDE=-Iinclude -I$(CUDA_DIR)/include
 LDFLAGS=-L$(CUDA_DIR)/$(CUDA_LIB) -L$(LIB_DIR)
-LIBS=-lcudart -lcublas -lquark
+LIBS=-lcudart -lcublas -l$(PROJECT)
 
 # Gather list of cc files to build
 CXX_FILES=$(shell find $(SRC_DIR) -name "*.cc" ! -name "*_test.cc")
-CXX_OBJ=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
-LIB_DEPS=$(CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR/%.d)
+CXX_OBJ=$(CXX_FILES:%.cc=$(BUILD_DIR)/%.o)
+LIB_DEPS=$(CXX_FILES:%.cc=$(BUILD_DIR/%.d)
 
 # Env variables for nvcc build
 NVCC_FLAGS=-std=c++11
 
 # Gather list of cu files to build
 CU_FILES=$(shell find $(SRC_DIR) -name "*.cu")
-CU_OBJ=$(CU_FILES:$(SRC_DIR)/%.cu=$(BUILD_DIR)/cuda/%.o)
-CU_DEPS=$(CU_FILES:$(SRC_DIR)/%.cu=$(BUILD_DIR)/cuda/%.d)
+CU_OBJ=$(CU_FILES:%.cu=$(BUILD_DIR)/cuda/%.o)
+CU_DEPS=$(CU_FILES:%.cu=$(BUILD_DIR)/cuda/%.d)
 
 # Test env variables
 TEST_INCLUDE=-I$(GTEST_DIR)/include $(INCLUDE)
 TEST_LDFLAGS=-L$(GTEST_DIR) $(LDFLAGS)
 TEST_LIB=-lgtest $(LIBS)
-TEST_BIN=$(BUILD_DIR)/test/run_tests
+TEST_BIN=$(BUILD_DIR)/$(SRC_DIR)/$(PROJECT)/test/run_tests
 
 # Gather list of test cc files
 TEST_CXX_FILES=$(shell find $(SRC_DIR) -name "*_test.cc")
-TEST_CXX_OBJ=$(TEST_CXX_FILES:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
-TEST_DEPS=$(TEST_CXX_FILES:$(SRC_DIR/%.cc=$(BUILD_DIR)/%.d))
+TEST_CXX_OBJ=$(TEST_CXX_FILES:%.cc=$(BUILD_DIR)/%.o)
+TEST_DEPS=$(TEST_CXX_FILES:%.cc=$(BUILD_DIR)/%.d))
 
 # Gather list of example cc files
 EXAMPLE_CXX_FILES=$(shell find $(EXAMPLE_DIR) -name "*.cc")
@@ -55,21 +52,21 @@ EXAMPLE_BIN=$(EXAMPLE_CXX_FILES:%.cc=$(BUILD_DIR)/%)
 EXAMPLE_DEPS=$(EXAMPLE_CXX_FILES:%.cc=$(BUILD_DIR)/%.d)
 
 # Get directory structure
-DIR_TREE=$(shell find $(SRC_DIR) -type d)
-BUILD_DIR_TREE=$(DIR_TREE:$(SRC_DIR)%=$(BUILD_DIR)%)
-BUILD_DIR_TREE+=$(BUILD_DIR)/$(EXAMPLE_DIR)
-BUILD_DIR_TREE+=$(DIR_TREE:$(SRC_DIR)%=$(BUILD_DIR)/cuda/%)
+SRC_DIRS=$(shell find $(SRC_DIR) -type d)
+ALL_BUILD_DIRS=$(SRC_DIRS:%=$(BUILD_DIR)/%)
+ALL_BUILD_DIRS+=$(BUILD_DIR)/$(EXAMPLE_DIR)
+ALL_BUILD_DIRS+=$(SRC_DIRS:%=$(BUILD_DIR)/cuda/%)
 
 .PHONY: all clean test examples lib
 
 all: lib test examples
 
-$(BUILD_DIR_TREE):
-	$(Q)mkdir -p $(BUILD_DIR_TREE)
+$(ALL_BUILD_DIRS):
+	$(Q)mkdir -p $(ALL_BUILD_DIRS)
 
 # NOTE: Test build rules must be first so that correct *_test.o rule is called.
 # This is not an issues with make version >=3.82
-$(BUILD_DIR)/%_test.o: $(SRC_DIR)/%_test.cc | $(BUILD_DIR_TREE)
+$(BUILD_DIR)/%_test.o: %_test.cc | $(ALL_BUILD_DIRS)
 	@echo CXX $<
 	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) $(TEST_INCLUDE) -c $< -o $@
 
@@ -77,24 +74,24 @@ $(BUILD_DIR)/%_test.o: $(SRC_DIR)/%_test.cc | $(BUILD_DIR_TREE)
 # libquark.a be listed with the .o files when $(CC) is called. This doesn't
 # seem to cause any issues, and I can't find any information on what happens
 # when this occurs. Leaving this for now...
-$(TEST_BIN): $(TEST_CXX_OBJ) $(STATIC_LIB) | $(BUILD_DIR_TREE)
+$(TEST_BIN): $(TEST_CXX_OBJ) $(STATIC_LIB) | $(ALL_BUILD_DIRS)
 	@echo CXX -o $@
 	$(Q)$(CC) $(CXX_FLAGS) -o $@ $^ $(TEST_LDFLAGS) $(TEST_LIB)
 
 test: $(TEST_BIN)
 
-$(BUILD_DIR)/$(EXAMPLE_DIR)/%: $(EXAMPLE_DIR)/%.cc $(STATIC_LIB) | $(BUILD_DIR_TREE)
+$(BUILD_DIR)/%: %.cc $(STATIC_LIB) | $(ALL_BUILD_DIRS)
 	@echo CXX -o $@
 	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) -o $@ $< $(INCLUDE) $(LDFLAGS) $(LIBS)
 
 examples: $(EXAMPLE_BIN)
 
-$(BUILD_DIR)/cuda/%.o: $(SRC_DIR)/%.cu | $(BUILD_DIR_TREE)
+$(BUILD_DIR)/cuda/%.o: %.cu | $(ALL_BUILD_DIRS)
 	@echo NVCC $<
 	$(Q)$(NVCC) $(NVCC_FLAGS) $(INCLUDE) -M $< -o $(@:%.o=%.d) -odir $(@D)
 	$(Q)$(NVCC) $(NVCC_FLAGS) $(INCLUDE) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc | $(BUILD_DIR_TREE)
+$(BUILD_DIR)/%.o: %.cc | $(ALL_BUILD_DIRS)
 	@echo CXX $<
 	$(Q)$(CC) $(CXX_FLAGS) $(DEP_FLAGS) $(INCLUDE) -c $< -o $@
 
