@@ -9,12 +9,11 @@ namespace quark {
 
 /**
  * Computes:
- * c = \alpha * Op(a) * op(b)
+ * c = \alpha * Op(a) * Op(b)
  */
 template <typename T>
 class MatmulOp final : public OpBase<T> {
 public:
-
   /**
    * Stores and validates inputs.
    *

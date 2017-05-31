@@ -47,7 +47,7 @@ public:
   Tensor() {}
 
   /**
-   * Creates a tensor with the input shape.
+   * Creates a Tensor with the input shape.
    */
   explicit Tensor(vector<int64> shape) {
     size_ = Prod(shape);
@@ -57,24 +57,24 @@ public:
   }
 
   /**
-   * Creates a tensor with the input shape that stores the input data.
+   * Creates a Tensor with the input shape that stores the input data.
    *
-   * @throws runtime_error if the size of the tensor does not match the
+   * @throws runtime_error if the size of the Tensor does not match the
    * number of elements in the data vector.
    */
   Tensor(vector<int64> shape, const vector<T>& data) {
     QUARK_CHECK(Prod(shape) == data.size(),
-        "New tensor shape does not match the number of elements in the data vector");
+        "New Tensor shape does not match the number of elements in the data vector");
 
     Resize(shape);
     CopyData(data.size(), data.data(), data_);
   }
 
-  // TODO(Trevor): Having these copy constructors is very dangerous with the global tensor id
+  // TODO(Trevor): Having these copy constructors is very dangerous with the global Tensor id
   // system. Allowing copying can make issues with the graph compilation process. Consider
   // removing these and requiring the user to do some more explicit form of copying to do this.
   /**
-   * Creates a tensor by copying a different tensor with an arbitrary backend.
+   * Creates a Tensor by copying a different Tensor with an arbitrary backend.
    */
   template <typename SrcBackend>
   explicit Tensor(const Tensor<T, SrcBackend>& other) {
@@ -98,19 +98,19 @@ public:
 
   /**
    * Alters the shape of the tensor without changing the underlying memory. 
-   * Requires that the size of the tensor stays the same.
+   * Requires that the size of the Tensor stays the same.
    *
-   * @throws runtime_error if the new tensor shape does not have the same 
-   * number of elements as the current tensor.
+   * @throws runtime_error if the new Tensor shape does not have the same 
+   * number of elements as the current Tensor.
    */
   void Reshape(vector<int64> new_shape) {
-    QUARK_CHECK(Prod(new_shape) == size_, "Input tensor shape has different number of elements than current tensor");
+    QUARK_CHECK(Prod(new_shape) == size_, "Input Tensor shape has different number of elements than current Tensor");
     shape_ = new_shape;
   }
 
   /**
-   * Resizes a tensor. The underlying memory is only reallocated if the new
-   * tensor size is larger than the current capacity of the tensor. Thus, 
+   * Resizes a Tensor. The underlying memory is only reallocated if the new
+   * Tensor size is larger than the current capacity of the Tensor. Thus, 
    * Resize is not guaranteed to maintain the data currently stored in 
    * the Tensor
    */
@@ -134,21 +134,31 @@ public:
   }
 
   /**
-   * Copies data from the input tensor into this tensor
+   * Copies data from the input tensor into this Tensor
    *
-   * @throws runtime_error if the shape of calling tensor and input tensor
+   * @throws runtime_error if the shape of calling Tensor and input Tensor
    * don't match
    */
   template <typename SrcBackend>
   void Copy(const Tensor<T, SrcBackend>& src) {
-    QUARK_CHECK(src.shape() == shape(), "Input tensor shape must match current tensor shape to perform copy");
+    QUARK_CHECK(src.shape() == shape(), "Input Tensor shape must match current Tensor shape to perform copy");
     CopyData(src.size(), src.data(), data_);
+  }
+
+  /**
+   * Copies data from the input vector into this Tensor. Prod(this->shape()) must be
+   * equal to the lenght of the input vector
+   */
+  void Copy(const vector<T>& src) {
+    QUARK_CHECK(src.size() == Prod(shape()),
+        "Input vector must have same number of elements as the calling Tensor");
+    CopyData(size(), src.data(), data_);
   }
   
   /**
-   * Returns a pointer to the underlying data store in a tensor
+   * Returns a pointer to the underlying data store in a Tensor
    *
-   * @throws runtime_error if tensor stores no data
+   * @throws runtime_error if Tensor stores no data
    */
   T* mutable_data() {
     QUARK_CHECK(shape_.size() != 0, "Tensor stores no data (shape == {})");
@@ -156,9 +166,9 @@ public:
   }
 
   /**
-   * Returns a const pointer to the underlying data store in a tensor
+   * Returns a const pointer to the underlying data store in a Tensor
    *
-   * @throws runtime_error if tensor stores no data
+   * @throws runtime_error if Tensor stores no data
    */
   const T* data() const {
     QUARK_CHECK(shape_.size() != 0, "Tensor stores no data (shape == {})");
@@ -166,17 +176,17 @@ public:
   }
 
   /**
-   * Returns the shape of a tensor
+   * Returns the shape of a Tensor
    */
   vector<int64> shape() const { return shape_; }
   
   /**
-   * Returns the size of a tensor
+   * Returns the size of a Tensor
    */
   int64 size() const { return size_; }
 
   /**
-   * Returns the id of the tensor
+   * Returns the id of the Tensor
    */
   TensorId id() const { return tid_.id(); }
   

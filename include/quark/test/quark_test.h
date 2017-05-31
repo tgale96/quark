@@ -2,10 +2,11 @@
 #define QUARK_TEST_QUARK_TEST_H_
 
 #include <cmath>
-#include <cstdlib>
 #include <ctime>
 #include <gtest/gtest.h>
 #include <random>
+
+#include "quark/ops/op_base.h"
 
 namespace quark {
 
@@ -50,9 +51,9 @@ public:
 
     bool res = true;
     for (int i = 0; i < num; ++i) {
-      double diff = abs(h_d1[i] - h_d2[i]);
+      double diff = std::abs(h_d1[i] - h_d2[i]);
       if (diff > threshold) {
-        std::cout << h_d1[i] << " v. " << h_d2[i] << std::endl;
+        std::cout << i << ": " << h_d1[i] << " v. " << h_d2[i] << std::endl;
         res = false;
       }
     }
@@ -60,6 +61,14 @@ public:
     delete[] h_d1;
     delete[] h_d2;
     return res;
+  }
+
+  void RunOp(OpBase<T>* op) {
+    cudaEvent_t event;
+    CUDA_CALL(cudaEventCreate(&event));
+    op->Run(0, event, {});
+    CUDA_CALL(cudaDeviceSynchronize());
+    CUDA_CALL(cudaEventDestroy(event));
   }
   
 protected:

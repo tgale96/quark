@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "quark/ops/add_op.h"
+#include "quark/ops/eltwise_product_op.h"
 #include "quark/ops/matmul_op.h"
 #include "quark/test/quark_test.h"
 #include "quark/util/cuda_util.h"
@@ -77,6 +78,24 @@ public:
     delete[] h_d2;
     return res;
   }
+
+  vector<T> ComputeEltwiseProd(T alpha, const T* d1, const T* d2, int n) {
+    QUARK_CHECK(d1, "d1 ptr must not be nullptr");
+    QUARK_CHECK(d2, "d2 ptr must not be nullptr");
+
+    T* h_d1 = new T[n];
+    T* h_d2 = new T[n];
+    CUDA_CALL(cudaMemcpy(h_d1, d1, n * sizeof(T), cudaMemcpyDefault));
+    CUDA_CALL(cudaMemcpy(h_d2, d2, n * sizeof(T), cudaMemcpyDefault));
+    vector<T> res(n, 0);
+
+    for (int i = 0; i < n; ++i) {
+      res[i] = alpha * h_d1[i] * h_d2[i];
+    }
+    delete[] h_d1;
+    delete[] h_d2;
+    return res;
+  }
   
 protected:
 };
@@ -95,10 +114,7 @@ TYPED_TEST(MathOpsTest, TestSmallAddOpNoTrans) {
   AddOp<TypeParam> op(1.0, false, a, 1.0, false, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> result = {2, 4, 6, 8, 10, 12};
@@ -119,10 +135,7 @@ TYPED_TEST(MathOpsTest, TestAddOpNoTrans) {
   AddOp<TypeParam> op(1.0, false, a, 1.0, false, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> result = this->ComputeSum(a.data(), b.data(), a.size());
@@ -140,10 +153,7 @@ TYPED_TEST(MathOpsTest, TestSmallAddOpTrans) {
   AddOp<TypeParam> op(1.0, true, a, 1.0, true, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> result = {2, 6, 10, 4, 8, 12};
@@ -165,10 +175,7 @@ TYPED_TEST(MathOpsTest, TestAddOpTransB) {
   AddOp<TypeParam> op(1.0, false, a, 1.0, true, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> trans_b = this->TransposeMatrix(b.data(), b.shape()[0], b.shape()[1]);
@@ -191,10 +198,7 @@ TYPED_TEST(MathOpsTest, TestAddOpTransA) {
   AddOp<TypeParam> op(1.0, true, a, 1.0, false, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> trans_a = this->TransposeMatrix(a.data(), a.shape()[0], a.shape()[1]);
@@ -216,10 +220,7 @@ TYPED_TEST(MathOpsTest, TestAddOpTransAB) {
   AddOp<TypeParam> op(1.0, true, a, 1.0, true, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> trans_a = this->TransposeMatrix(a.data(), a.shape()[0], a.shape()[1]);
@@ -239,10 +240,7 @@ TYPED_TEST(MathOpsTest, TestSmallMatmulOpNoTrans) {
   MatmulOp<TypeParam> op(1.0, false, a, false, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
 
   // check the output
   vector<TypeParam> result = {5, 11, 17};
@@ -266,10 +264,7 @@ TYPED_TEST(MathOpsTest, TestMatmulOpNoTrans) {
   MatmulOp<TypeParam> op(1.0, false, a, false, b, &c);
   
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
   
   // check the output
   vector<TypeParam> result = this->ComputeProduct(a.data(), b.data(), a.shape()[0],
@@ -288,10 +283,7 @@ TYPED_TEST(MathOpsTest, TestSmallMatmulOpTrans) {
   MatmulOp<TypeParam> op(1.0, true, a, true, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
 
   // check the output
   vector<TypeParam> result = {1, 2, 2, 4};
@@ -315,10 +307,7 @@ TYPED_TEST(MathOpsTest, TestMatmulOpTransA) {
   MatmulOp<TypeParam> op(1.0, true, a, false, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
 
   // check the output
   vector<TypeParam> trans_a = this->TransposeMatrix(a.data(), a.shape()[0], a.shape()[1]);
@@ -344,10 +333,7 @@ TYPED_TEST(MathOpsTest, TestMatmulOpTransB) {
   MatmulOp<TypeParam> op(1.0, false, a, true, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
 
   // check the output
   vector<TypeParam> trans_b = this->TransposeMatrix(b.data(), b.shape()[0], b.shape()[1]);
@@ -373,10 +359,7 @@ TYPED_TEST(MathOpsTest, TestMatmulOpTransAB) {
   MatmulOp<TypeParam> op(1.0, true, a, true, b, &c);
 
   // run the op
-  cudaEvent_t event;
-  CUDA_CALL(cudaEventCreate(&event));
-  op.Run(0, event, {});
-  CUDA_CALL(cudaDeviceSynchronize());
+  this->RunOp(&op);
 
   // check the output
   vector<TypeParam> trans_a = this->TransposeMatrix(a.data(), a.shape()[0], a.shape()[1]);
@@ -384,6 +367,53 @@ TYPED_TEST(MathOpsTest, TestMatmulOpTransAB) {
   vector<TypeParam> result = this->ComputeProduct(trans_a.data(), trans_b.data(), a.shape()[1],
       b.shape()[0], a.shape()[0]);
   ASSERT_TRUE(this->CompareData(result.data(), c.data(), c.size(), .00001));
+}
+
+TYPED_TEST(MathOpsTest, TestEltwiseProductOp) {
+  vector<int64> dims = this->GetRandMatrixDims();
+
+  vector<TypeParam> data, other_data, alpha;
+  this->GetRandData(dims, &data);
+  this->GetRandData(dims, &other_data);
+  this->GetRandData({int64(1)}, &alpha);
+
+  Tensor<TypeParam, CudaBackend> a(dims, data);
+  Tensor<TypeParam, CudaBackend> b(dims, other_data);
+  Tensor<TypeParam, CudaBackend> c;
+
+  // Get the operator
+  EltwiseProductOp<TypeParam> op(alpha[0], a, b, &c);
+
+  // run the op
+  this->RunOp(&op);
+
+  vector<TypeParam> result = this->ComputeEltwiseProd(alpha[0], a.data(), b.data(), a.size());
+  ASSERT_TRUE(this->CompareData(result.data(), c.data(), c.size()));
+  ASSERT_TRUE(op.inputs().size() == 2);
+}
+
+TYPED_TEST(MathOpsTest, TestEltwiseProductOpTensorAlpha) {
+  vector<int64> dims = this->GetRandMatrixDims();
+
+  vector<TypeParam> data, other_data, alpha;
+  this->GetRandData(dims, &data);
+  this->GetRandData(dims, &other_data);
+  this->GetRandData({int64(1)}, &alpha);
+
+  Tensor<TypeParam, CudaBackend> a(dims, data);
+  Tensor<TypeParam, CudaBackend> b(dims, other_data);
+  Tensor<TypeParam, CudaBackend> tensor_alpha({1}, alpha);
+  Tensor<TypeParam, CudaBackend> c;
+
+  // Get the operator
+  EltwiseProductOp<TypeParam> op(tensor_alpha, a, b, &c);
+
+  // run the op
+  this->RunOp(&op);
+
+  vector<TypeParam> result = this->ComputeEltwiseProd(alpha[0], a.data(), b.data(), a.size());
+  ASSERT_TRUE(this->CompareData(result.data(), c.data(), c.size()));
+  ASSERT_TRUE(op.inputs().size() == 3);
 }
 
 } // namepace quark
